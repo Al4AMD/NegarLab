@@ -5,7 +5,7 @@ Living status log. Update after every task; keep claims verified.
 | Wave | Scope | Status |
 |---|---|---|
 | W0 | Foundation: monorepo, shell, ingest, jobs, golden vectors, Docker, docs | Done |
-| W1 | I01 fundamentals, I03 histogram/point ops | Planned |
+| W1 | I01 fundamentals, I03 histogram/point ops | Done |
 | W2 | I04 spatial filters, I05 frequency domain | Planned |
 | W3 | I09 compression, I10 quality metrics | Planned |
 | W4 | I02 color spaces, I06 restoration, I07 morphology | Planned |
@@ -14,6 +14,15 @@ Living status log. Update after every task; keep claims verified.
 | W7 | I15 education layer, I17 quality of life, polish and hardening | Planned |
 
 ## Log
+
+### 2026-11-23 — W1
+
+- W1 plan committed (`docs/superpowers/plans/2026-11-23-w1-fundamentals.md`).
+- `@negarlab/ip`: channels/histograms, negative/log/gamma, stretch/equalize, Otsu/threshold, quantization, nearest resize, histogram matching, CLAHE; NumPy golden fixture; 27 tests green.
+- Web: demo and upload loading, canonical RGBA decode, stage canvas, bilingual errors.
+- Web: worker-side stats and channel histograms; pixel inspector with clamped 8×8 matrix.
+- Web: point-op and sampling panels with live worker previews, CLAHE controls, KaTeX theory panels; e2e exercises preview and reset.
+- Close-out: `pnpm check` (27 ip, 3 web tests, i18n), API pytest (15), ruff/mypy, web build, Playwright e2e, golden reproducibility, `docker compose build` green.
 
 ### 2026-11-23 — W0
 

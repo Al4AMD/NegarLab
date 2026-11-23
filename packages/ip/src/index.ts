@@ -1,3 +1,11 @@
+export { planesToRgba, rgbaToPlanes } from "./channels";
+export type { ClaheOptions } from "./clahe";
+export { clahe } from "./clahe";
+export { contrastStretch, equalize } from "./equalize";
+export { byteHistogram, channelHistogram, histogramCdf, lumaHistogram } from "./histogram";
 export { rgbaToLuma } from "./luma";
+export { gammaCorrect, logTransform, negative } from "./pointOps";
+export { matchHistogram, quantizeBits, resizeNearest } from "./sampling";
 export { planeStats } from "./stats";
-export type { ImageStats, Plane, RgbaImage } from "./types";
+export { otsuThreshold, threshold } from "./threshold";
+export type { ImageStats, Plane, RgbaImage, RgbPlanes } from "./types";
