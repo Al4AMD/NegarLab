@@ -3,9 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useImageStore } from "../lib/imageStore";
 import { createIpWorker, type IpWorkerHandle } from "../lib/ipClient";
 import type { ImageAnalysis } from "../workers/ip.worker";
+import { CompressionPanel } from "./CompressionPanel";
 import { FrequencyPanel } from "./FrequencyPanel";
 import { HistogramView } from "./HistogramView";
 import { Inspector } from "./Inspector";
+import { MetricsPanel } from "./MetricsPanel";
 import { PointOpsPanel } from "./PointOpsPanel";
 import { SamplingPanel } from "./SamplingPanel";
 import { SpatialPanel } from "./SpatialPanel";
@@ -13,7 +15,15 @@ import { TheoryPanel } from "./TheoryPanel";
 
 const CHANNELS = ["luma", "r", "g", "b"] as const;
 type Channel = (typeof CHANNELS)[number];
-const TABS = ["inspect", "point", "sampling", "spatial", "frequency"] as const;
+const TABS = [
+  "inspect",
+  "point",
+  "sampling",
+  "spatial",
+  "frequency",
+  "compression",
+  "metrics",
+] as const;
 type Tab = (typeof TABS)[number];
 
 function channelIndex(channel: Channel): 0 | 1 | 2 {
@@ -164,6 +174,8 @@ export function ParameterDock() {
       {tab === "sampling" && <SamplingPanel />}
       {tab === "spatial" && <SpatialPanel />}
       {tab === "frequency" && <FrequencyPanel />}
+      {tab === "compression" && <CompressionPanel />}
+      {tab === "metrics" && <MetricsPanel />}
     </aside>
   );
 }

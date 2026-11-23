@@ -1,4 +1,5 @@
 import json
+import math
 
 from negarlab_golden.generate import build_vectors, write_vectors
 
@@ -53,3 +54,35 @@ def test_w2_vectors_are_deterministic(tmp_path):
     assert first.read_bytes() == second.read_bytes()
     assert W2_OUT.exists(), "run pnpm gen:golden"
     assert json.loads(W2_OUT.read_text()) == build_w2_vectors()
+
+
+def assert_close(actual, expected):
+    if isinstance(actual, float) or isinstance(expected, float):
+        assert math.isclose(actual, expected, rel_tol=0.0, abs_tol=1e-6)
+    elif isinstance(actual, dict):
+        assert actual.keys() == expected.keys()
+        for key in actual:
+            assert_close(actual[key], expected[key])
+    elif isinstance(actual, list):
+        assert len(actual) == len(expected)
+        for left, right in zip(actual, expected):
+            assert_close(left, right)
+    else:
+        assert actual == expected
+
+
+def test_w3_vectors_are_deterministic(tmp_path):
+    from negarlab_golden.generate import W3_OUT, build_w3_vectors, write_w3_vectors
+
+    first = tmp_path / "a.json"
+    second = tmp_path / "b.json"
+    write_w3_vectors(first)
+    write_w3_vectors(second)
+    assert first.read_bytes() == second.read_bytes()
+    assert W3_OUT.exists(), "run pnpm gen:golden"
+    assert_close(json.loads(W3_OUT.read_text()), build_w3_vectors())
+    data = build_w3_vectors()
+    assert len(data["expected"]["jpeg50"]) == 8 * 8 * 4
+    assert len(data["expected"]["jpegOdd"]) == 9 * 7 * 4
+    assert len(data["expected"]["png"]["adaptive"]) == 8 * 8
+    assert data["expected"]["metrics"]["psnr"] > 0

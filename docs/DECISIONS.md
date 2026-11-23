@@ -41,3 +41,11 @@ Use Comlink to expose `packages/ip` from a module worker. Rationale: typed RPC w
 ## D10 — Model policy deferred to W6
 
 No ML model ships before W6. Then: prefer ONNX/CPU, ≤400 MB per model, ≤2 GB total, licenses verified (code and weights), offline prefetch, lazy load, progress/cancel jobs, tests gated by `NEGARLAB_RUN_ML_TESTS=1`.
+
+## D11 — JPEG teaching pipeline is 4:4:4 with estimated entropy
+
+The W3 JPEG lab converts to BT.601 YCbCr at full resolution (4:4:4), pads partial 8×8 blocks by edge replication, and reports an entropy estimate (DC differential and AC run/size symbols, separate canonical Huffman tables, no headers) rather than a standards-compliant bitstream. Rationale: keeps the DCT/quantization lesson exact and testable without shipping an encoder; chroma subsampling belongs with color spaces (I02/W4). Consequence: `encodedBytes`, `bpp`, and `ratio` are comparative estimates; the compression theory note says the entropy size excludes headers.
+
+## D12 — LZW uses fixed 16-bit codes
+
+The lossless comparison LZW encoder emits 16-bit big-endian codes, starts at 256, and never emits a clear code. Rationale: simple deterministic teaching implementation with a bounded dictionary. Consequence: compressed size is worse than GIF/TIFF LZW on long inputs; replace only if a real LZW codec is required.

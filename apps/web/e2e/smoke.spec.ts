@@ -60,6 +60,22 @@ test("bilingual shell, theme toggle, and worker system check", async ({ page }) 
   await page.getByTestId("frequency-reset").click();
   await expect(page.getByTestId("stage-preview")).toHaveCount(0);
 
+  await page.getByTestId("tab-compression").click();
+  await expect(page.getByTestId("compression-stats")).toBeVisible();
+  await expect(page.getByTestId("lossless-table")).toBeVisible();
+  await expect(page.getByTestId("jpeg-block")).toBeVisible();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("compression-quality").fill("20");
+  await expect(page.getByTestId("compression-stats")).toContainText("Bits / pixel");
+
+  await page.getByTestId("tab-metrics").click();
+  await expect(page.getByTestId("metrics-values")).toBeVisible();
+  await expect(page.getByTestId("ssim-map")).toBeVisible();
+  await expect(page.getByTestId("metrics-heatmap")).toBeVisible();
+  await page.getByTestId("metrics-quality").fill("30");
+  await page.getByTestId("metrics-rd").click();
+  await expect(page.getByTestId("rd-chart")).toBeVisible();
+
   await page.getByRole("button", { name: "System check" }).click();
   const readout = page.getByTestId("stats-readout");
   await expect(readout).toBeVisible();
