@@ -15,3 +15,9 @@ export interface ImageStats {
   readonly variance: number;
   readonly entropyBits: number;
 }
+
+export interface RgbPlanes {
+  readonly r: Plane;
+  readonly g: Plane;
+  readonly b: Plane;
+}

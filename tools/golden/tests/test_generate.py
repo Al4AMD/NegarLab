@@ -29,3 +29,15 @@ def test_committed_fixture_matches_generator(tmp_path):
     regenerated = tmp_path / "luma-stats.json"
     write_vectors(regenerated)
     assert json.loads(regenerated.read_text()) == json.loads(DEFAULT_OUT.read_text())
+
+
+def test_w1_vectors_are_deterministic(tmp_path):
+    from negarlab_golden.generate import W1_OUT, build_w1_vectors, write_w1_vectors
+
+    first = tmp_path / "a.json"
+    second = tmp_path / "b.json"
+    write_w1_vectors(first)
+    write_w1_vectors(second)
+    assert first.read_bytes() == second.read_bytes()
+    assert W1_OUT.exists(), "run pnpm gen:golden"
+    assert json.loads(W1_OUT.read_text()) == build_w1_vectors()
