@@ -18,6 +18,7 @@ DEFAULT_OUT = (
     Path(__file__).resolve().parents[3] / "packages/ip/test-data/golden/luma-stats.json"
 )
 W1_OUT = DEFAULT_OUT.with_name("w1-fundamentals.json")
+W2_OUT = DEFAULT_OUT.with_name("w2-spatial-frequency.json")
 
 
 def pattern_rgba() -> np.ndarray:
@@ -307,6 +308,127 @@ def build_w1_vectors() -> dict:
     }
 
 
+
+def gaussian_kernel(size: int, sigma: float) -> np.ndarray:
+    center = (size - 1) / 2
+    ys, xs = np.mgrid[0:size, 0:size]
+    weights = np.exp(-((xs - center) ** 2 + (ys - center) ** 2) / (2 * sigma * sigma))
+    return weights / weights.sum()
+
+
+def convolve_channel(channel: np.ndarray, weights: np.ndarray) -> np.ndarray:
+    size = weights.shape[0]
+    half = size // 2
+    padded = np.pad(channel, ((half, half), (half, half)), mode="edge").astype(np.float64)
+    height, width = channel.shape
+    out = np.zeros((height, width), dtype=np.float64)
+    for ky in range(size):
+        for kx in range(size):
+            out += padded[ky : ky + height, kx : kx + width] * weights[ky, kx]
+    return np.clip(np.floor(out + 0.5), 0, 255).astype(np.uint8)
+
+
+def convolve(rgba: np.ndarray, weights: np.ndarray) -> np.ndarray:
+    out = rgba.copy()
+    for channel_index in range(3):
+        out[..., channel_index] = convolve_channel(rgba[..., channel_index], weights)
+    return out
+
+
+def median3(rgba: np.ndarray) -> np.ndarray:
+    out = rgba.copy()
+    padded = np.pad(rgba[..., :3].astype(np.int64), ((1, 1), (1, 1), (0, 0)), mode="edge")
+    height, width = rgba.shape[:2]
+    for channel_index in range(3):
+        windows = np.stack(
+            [
+                padded[dy : dy + height, dx : dx + width, channel_index]
+                for dy in range(3)
+                for dx in range(3)
+            ],
+            axis=-1,
+        )
+        out[..., channel_index] = np.median(windows, axis=-1).astype(np.uint8)
+    return out
+
+
+def sobel_magnitude(rgba: np.ndarray) -> np.ndarray:
+    px = np.pad(luma(rgba).astype(np.float32), ((1, 1), (1, 1)), mode="edge").astype(np.float64)
+    kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float64)
+    ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=np.float64)
+    height, width = rgba.shape[:2]
+    gx = np.zeros((height, width))
+    gy = np.zeros((height, width))
+    for row in range(3):
+        for col in range(3):
+            gx += px[row : row + height, col : col + width] * kx[row, col]
+            gy += px[row : row + height, col : col + width] * ky[row, col]
+    magnitude = np.clip(np.hypot(gx / 4, gy / 4), 0, 1)
+    return np.floor(magnitude * 255 + 0.5).astype(np.uint8)
+
+
+def sobel_rgba(rgba: np.ndarray) -> np.ndarray:
+    out = rgba.copy()
+    magnitude = sobel_magnitude(rgba)
+    out[..., 0] = magnitude
+    out[..., 1] = magnitude
+    out[..., 2] = magnitude
+    return out
+
+
+def fft_magnitude(rgba: np.ndarray) -> np.ndarray:
+    values = luma(rgba).astype(np.float32).astype(np.float64)
+    magnitude = np.log1p(np.abs(np.fft.fft2(values)))
+    maximum = magnitude.max()
+    if maximum > 0:
+        magnitude = magnitude / maximum
+    return magnitude.astype(np.float32)
+
+
+def gaussian_lowpass(rgba: np.ndarray, cutoff: float) -> np.ndarray:
+    values = luma(rgba).astype(np.float32).astype(np.float64)
+    spectrum = np.fft.fft2(values)
+    height, width = values.shape
+    mask = np.zeros((height, width))
+    for y in range(height):
+        shifted_y = (y + height // 2) % height
+        dy = (shifted_y - height / 2) / (height / 2)
+        for x in range(width):
+            shifted_x = (x + width // 2) % width
+            dx = (shifted_x - width / 2) / (width / 2)
+            distance = float(np.hypot(dx, dy))
+            mask[y, x] = np.exp(-(distance * distance) / (2 * cutoff * cutoff))
+    restored = np.real(np.fft.ifft2(spectrum * mask))
+    out = rgba.copy()
+    bytes_channel = np.clip(np.floor(restored * 255 + 0.5), 0, 255).astype(np.uint8)
+    out[..., 0] = bytes_channel
+    out[..., 1] = bytes_channel
+    out[..., 2] = bytes_channel
+    return out
+
+
+def build_w2_vectors() -> dict:
+    rgba = pattern_rgba()
+    mean_kernel = np.full((3, 3), 1 / 9, dtype=np.float64)
+    return {
+        "input": {"width": SIZE, "height": SIZE, "rgba": rgba.reshape(-1).tolist()},
+        "expected": {
+            "mean": convolve(rgba, mean_kernel).reshape(-1).tolist(),
+            "gaussian": convolve(rgba, gaussian_kernel(5, 1.0)).reshape(-1).tolist(),
+            "median": median3(rgba).reshape(-1).tolist(),
+            "sobel": sobel_rgba(rgba).reshape(-1).tolist(),
+            "fftMagnitude": fft_magnitude(rgba).reshape(-1).tolist(),
+            "lowpass": gaussian_lowpass(rgba, 0.35).reshape(-1).tolist(),
+        },
+        "tolerance": TOLERANCE,
+        "source": "tools/golden/negarlab_golden/generate.py (numpy float64, float32 luma)",
+    }
+
+
+def write_w2_vectors(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(build_w2_vectors(), indent=2) + "\n", encoding="utf-8")
+
 def write_vectors(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(build_vectors(), indent=2) + "\n", encoding="utf-8")
@@ -327,6 +449,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "generate":
         write_vectors(args.out)
         write_w1_vectors(W1_OUT)
+        write_w2_vectors(W2_OUT)
         print(f"wrote {args.out} and {W1_OUT}")
         return 0
     return 1

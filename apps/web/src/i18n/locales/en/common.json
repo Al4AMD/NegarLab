@@ -107,7 +107,9 @@
     "tabs": {
       "inspect": "Inspect",
       "point": "Point ops",
-      "sampling": "Sampling"
+      "sampling": "Sampling",
+      "spatial": "Filters",
+      "frequency": "Frequency"
     },
     "reset": "Reset preview",
     "point": {
@@ -126,6 +128,47 @@
     "sampling": {
       "bits": "Bit depth",
       "downsample": "Downsample"
+    },
+    "spatial": {
+      "ops": {
+        "mean": "Mean",
+        "gaussian": "Gaussian",
+        "median": "Median",
+        "bilateral": "Bilateral",
+        "sharpen": "Sharpen",
+        "unsharp": "Unsharp",
+        "sobel": "Sobel",
+        "prewitt": "Prewitt",
+        "laplacian": "Laplacian",
+        "log": "LoG",
+        "canny": "Canny"
+      },
+      "size": "Kernel",
+      "radius": "Radius",
+      "amount": "Amount"
+    },
+    "frequency": {
+      "spectrum": "Spectrum",
+      "modes": {
+        "magnitude": "Magnitude",
+        "phase": "Phase"
+      },
+      "kinds": {
+        "low": "Lowpass",
+        "high": "Highpass",
+        "band": "Bandpass",
+        "notch": "Notch"
+      },
+      "families": {
+        "ideal": "Ideal",
+        "butterworth": "Butterworth",
+        "gaussian": "Gaussian"
+      },
+      "family": "Family",
+      "cutoff": "Cutoff",
+      "width": "Band width",
+      "order": "Order",
+      "apply": "Apply filter"
     }
   },
   "transport": {
@@ -143,6 +186,8 @@
     "title": "Theory",
     "inspect": "Mean and variance describe brightness and spread. Entropy measures how many bits per pixel the histogram needs. A flat histogram means high entropy.",
     "point": "Point operations map each input level to an output level with a lookup table. Equalization uses the cumulative histogram; gamma and log curves compress or expand tones without spatial filtering.",
-    "sampling": "Quantization reduces the number of gray levels to 2^bits; nearest-neighbor downsampling keeps one source pixel per output pixel and can cause aliasing."
+    "sampling": "Quantization reduces the number of gray levels to 2^bits; nearest-neighbor downsampling keeps one source pixel per output pixel and can cause aliasing.",
+    "spatial": "A spatial filter replaces each pixel with a weighted sum of its neighborhood. Smoothing kernels average noise; sharpen and unsharp add high-frequency detail; median rejects outliers; gradient operators estimate edges.",
+    "frequency": "The 2D Fourier transform maps an image to spatial frequencies. Lowpass filters keep smooth structure, highpass keeps edges, bandpass keeps oriented texture, and notch filters suppress specific periodic noise."
   }
 }

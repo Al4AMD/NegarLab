@@ -41,3 +41,15 @@ def test_w1_vectors_are_deterministic(tmp_path):
     assert first.read_bytes() == second.read_bytes()
     assert W1_OUT.exists(), "run pnpm gen:golden"
     assert json.loads(W1_OUT.read_text()) == build_w1_vectors()
+
+
+def test_w2_vectors_are_deterministic(tmp_path):
+    from negarlab_golden.generate import W2_OUT, build_w2_vectors, write_w2_vectors
+
+    first = tmp_path / "a.json"
+    second = tmp_path / "b.json"
+    write_w2_vectors(first)
+    write_w2_vectors(second)
+    assert first.read_bytes() == second.read_bytes()
+    assert W2_OUT.exists(), "run pnpm gen:golden"
+    assert json.loads(W2_OUT.read_text()) == build_w2_vectors()

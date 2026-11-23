@@ -1,19 +1,35 @@
-import type { ImageStats, RgbaImage } from "@negarlab/ip";
+import type { FrequencyFilterOptions, ImageStats, RgbaImage } from "@negarlab/ip";
 import {
+  applyFrequencyFilter,
+  bilateralFilter,
   byteHistogram,
+  cannyEdges,
   clahe,
   contrastStretch,
   equalize,
+  fft2,
+  fftMagnitude,
+  fftPhase,
+  fftShift,
   gammaCorrect,
+  gaussianFilter,
+  laplacianImage,
+  logImage,
   logTransform,
   lumaHistogram,
+  meanFilter,
+  medianFilter,
   negative,
   otsuThreshold,
   planeStats,
+  prewittMagnitude,
   quantizeBits,
   resizeNearest,
   rgbaToLuma,
+  sharpenFilter,
+  sobelMagnitude,
   threshold,
+  unsharpMask,
 } from "@negarlab/ip";
 import * as Comlink from "comlink";
 
@@ -35,9 +51,59 @@ export type OpRequest =
   | { kind: "quantize"; bits: number }
   | { kind: "resize"; factor: number };
 
+export type SpatialRequest =
+  | { kind: "mean"; size: number }
+  | { kind: "gaussian"; size: number; sigma: number }
+  | { kind: "median"; radius: number }
+  | { kind: "bilateral"; radius: number; sigmaSpace: number; sigmaRange: number }
+  | { kind: "sharpen" }
+  | { kind: "unsharp"; sigma: number; amount: number }
+  | { kind: "sobel" }
+  | { kind: "prewitt" }
+  | { kind: "laplacian" }
+  | { kind: "log"; sigma: number }
+  | { kind: "canny"; low: number; high: number; sigma: number };
+
+export interface SpectrumAnalysis {
+  width: number;
+  height: number;
+  magnitude: Float32Array;
+  phase: Float32Array;
+}
+
 export interface WorkerApi {
   analyze(image: RgbaImage): ImageAnalysis;
   applyOps(image: RgbaImage, ops: OpRequest[]): RgbaImage;
+  applySpatial(image: RgbaImage, request: SpatialRequest): RgbaImage;
+  spectrum(image: RgbaImage): SpectrumAnalysis;
+  applyFrequency(image: RgbaImage, options: FrequencyFilterOptions): RgbaImage;
+}
+
+function applySpatialOp(image: RgbaImage, request: SpatialRequest): RgbaImage {
+  switch (request.kind) {
+    case "mean":
+      return meanFilter(image, request.size);
+    case "gaussian":
+      return gaussianFilter(image, request.size, request.sigma);
+    case "median":
+      return medianFilter(image, request.radius);
+    case "bilateral":
+      return bilateralFilter(image, request.radius, request.sigmaSpace, request.sigmaRange);
+    case "sharpen":
+      return sharpenFilter(image);
+    case "unsharp":
+      return unsharpMask(image, request.sigma, request.amount);
+    case "sobel":
+      return sobelMagnitude(image);
+    case "prewitt":
+      return prewittMagnitude(image);
+    case "laplacian":
+      return laplacianImage(image);
+    case "log":
+      return logImage(image, request.sigma);
+    case "canny":
+      return cannyEdges(image, request.low, request.high, request.sigma);
+  }
 }
 
 function applyOp(image: RgbaImage, op: OpRequest): RgbaImage {
@@ -82,6 +148,21 @@ const api: WorkerApi = {
   },
   applyOps(image, ops) {
     return ops.reduce(applyOp, image);
+  },
+  applySpatial(image, request) {
+    return applySpatialOp(image, request);
+  },
+  spectrum(image) {
+    const shifted = fftShift(fft2(rgbaToLuma(image)));
+    return {
+      width: shifted.width,
+      height: shifted.height,
+      magnitude: fftMagnitude(shifted).data,
+      phase: fftPhase(shifted).data,
+    };
+  },
+  applyFrequency(image, options) {
+    return applyFrequencyFilter(image, options);
   },
 };
 

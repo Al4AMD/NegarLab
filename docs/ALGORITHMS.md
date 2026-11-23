@@ -44,6 +44,18 @@ Per-channel contrast-limited adaptive equalization with uniform tiles, clipped h
 
 Quantization to `2^bits` levels, integer bits 1..8; nearest-neighbor resize with clamped source indices; per-channel CDF matching to the reference image. Golden covers 3-bit, 8→4 resize, and matching.
 
+### Spatial convolution and filters — `packages/ip/src/filters.ts`
+
+Direct 2D convolution with clamped borders over `[-1,0,1]`-style kernels; mean, Gaussian, sharpen, unsharp mask, median, bilateral, Sobel/Prewitt/Laplacian/LoG, and Canny (gradient, non-maximum suppression, hysteresis). Alpha is preserved. Golden covers mean 3×3, Gaussian 5×5 σ=1, median radius 1, and Sobel magnitude; Canny and bilateral are unit/property tested.
+
+### 2D FFT — `packages/ip/src/fft.ts`
+
+Row-column iterative radix-2 FFT, zero-padding each dimension to the next power of two. Provides inverse, `fftShift`, log-normalized magnitude, and phase. Tests: known 2×2 DFT, FFT∘IFFT identity, Parseval, shift involution; golden covers log magnitude of the 8×8 luma pattern.
+
+### Frequency filters — `packages/ip/src/frequencyFilters.ts`
+
+Luma-driven frequency masks in shifted coordinates: ideal, Butterworth, and Gaussian low/high/band filters plus symmetric notch suppression; inverse FFT restores RGBA with alpha preserved. Golden covers Gaussian lowpass at cutoff 0.35.
+
 ## Planned (later waves)
 
-FFT/convolution, histograms/point ops, spatial filters, morphology, geometric transforms, JPEG pipeline, wavelets, metrics, dithering, segmentation, steganography, ML inference. Add the formula, reference, and test location when implemented.
+Morphology, geometric transforms, JPEG pipeline, wavelets, metrics, dithering, segmentation, steganography, ML inference. Add the formula, reference, and test location when implemented.

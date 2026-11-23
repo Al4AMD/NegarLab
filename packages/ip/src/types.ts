@@ -16,6 +16,13 @@ export interface ImageStats {
   readonly entropyBits: number;
 }
 
+export interface ComplexImage {
+  readonly width: number;
+  readonly height: number;
+  readonly re: Float64Array;
+  readonly im: Float64Array;
+}
+
 export interface RgbPlanes {
   readonly r: Plane;
   readonly g: Plane;
