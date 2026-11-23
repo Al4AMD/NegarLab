@@ -1,21 +1,35 @@
-import type { FrequencyFilterOptions, ImageStats, RgbaImage } from "@negarlab/ip";
+import type {
+  FrequencyFilterOptions,
+  ImageStats,
+  JpegBlockStages,
+  JpegChannel,
+  JpegResult,
+  LosslessReport,
+  MetricsResult,
+  RgbaImage,
+} from "@negarlab/ip";
 import {
   applyFrequencyFilter,
   bilateralFilter,
   byteHistogram,
   cannyEdges,
   clahe,
+  compareMetrics,
   contrastStretch,
   equalize,
+  errorHeatmap,
   fft2,
   fftMagnitude,
   fftPhase,
   fftShift,
   gammaCorrect,
   gaussianFilter,
+  jpegBlock as jpegBlockStages,
+  jpegReconstruct,
   laplacianImage,
   logImage,
   logTransform,
+  losslessReport,
   lumaHistogram,
   meanFilter,
   medianFilter,
@@ -23,11 +37,13 @@ import {
   otsuThreshold,
   planeStats,
   prewittMagnitude,
+  psnr,
   quantizeBits,
   resizeNearest,
   rgbaToLuma,
   sharpenFilter,
   sobelMagnitude,
+  ssim,
   threshold,
   unsharpMask,
 } from "@negarlab/ip";
@@ -71,12 +87,38 @@ export interface SpectrumAnalysis {
   phase: Float32Array;
 }
 
+export interface MetricsComparison {
+  metrics: MetricsResult;
+  heatmap: RgbaImage;
+  ssimMap: Float32Array;
+  width: number;
+  height: number;
+}
+
+export interface RateDistortionPoint {
+  quality: number;
+  bpp: number;
+  psnr: number;
+  ssim: number;
+}
+
 export interface WorkerApi {
   analyze(image: RgbaImage): ImageAnalysis;
   applyOps(image: RgbaImage, ops: OpRequest[]): RgbaImage;
   applySpatial(image: RgbaImage, request: SpatialRequest): RgbaImage;
   spectrum(image: RgbaImage): SpectrumAnalysis;
   applyFrequency(image: RgbaImage, options: FrequencyFilterOptions): RgbaImage;
+  compressJpeg(image: RgbaImage, quality: number): JpegResult;
+  jpegBlock(
+    image: RgbaImage,
+    blockX: number,
+    blockY: number,
+    quality: number,
+    channel: JpegChannel,
+  ): JpegBlockStages;
+  lossless(image: RgbaImage): LosslessReport;
+  metricsCompare(a: RgbaImage, b: RgbaImage): MetricsComparison;
+  rateDistortion(image: RgbaImage, qualities: number[]): RateDistortionPoint[];
 }
 
 function applySpatialOp(image: RgbaImage, request: SpatialRequest): RgbaImage {
@@ -163,6 +205,36 @@ const api: WorkerApi = {
   },
   applyFrequency(image, options) {
     return applyFrequencyFilter(image, options);
+  },
+  compressJpeg(image, quality) {
+    return jpegReconstruct(image, quality);
+  },
+  jpegBlock(image, blockX, blockY, quality, channel) {
+    return jpegBlockStages(image, blockX, blockY, quality, channel);
+  },
+  lossless(image) {
+    return losslessReport(image);
+  },
+  metricsCompare(a, b) {
+    const ssimResult = ssim(a, b);
+    return {
+      metrics: compareMetrics(a, b),
+      heatmap: errorHeatmap(a, b),
+      ssimMap: ssimResult.map,
+      width: a.width,
+      height: a.height,
+    };
+  },
+  rateDistortion(image, qualities) {
+    return qualities.slice(0, 10).map((quality) => {
+      const result = jpegReconstruct(image, quality);
+      return {
+        quality,
+        bpp: result.bpp,
+        psnr: psnr(image, result.image),
+        ssim: ssim(image, result.image).mean,
+      };
+    });
   },
 };
 

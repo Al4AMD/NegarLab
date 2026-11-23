@@ -2,7 +2,14 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 import { useTranslation } from "react-i18next";
 
-export type TheoryTopic = "inspect" | "point" | "sampling" | "spatial" | "frequency";
+export type TheoryTopic =
+  | "inspect"
+  | "point"
+  | "sampling"
+  | "spatial"
+  | "frequency"
+  | "compression"
+  | "metrics";
 
 const FORMULAS: Record<TheoryTopic, string> = {
   inspect:
@@ -14,6 +21,10 @@ const FORMULAS: Record<TheoryTopic, string> = {
   spatial:
     "g(x,y)=\\sum_s\\sum_t w(s,t)\\,f(x-s,y-t),\\quad G_\\sigma=\\frac{1}{2\\pi\\sigma^2}e^{-(x^2+y^2)/(2\\sigma^2)}",
   frequency: "F(u,v)=\\sum_x\\sum_y f(x,y)\\,e^{-2\\pi i(ux/M+vy/N)}",
+  compression:
+    "F(u,v)=\\tfrac{1}{4}C(u)C(v)\\sum_x\\sum_y f(x,y)\\cos\\tfrac{(2x+1)u\\pi}{16}\\cos\\tfrac{(2y+1)v\\pi}{16},\\quad \\hat F=\\operatorname{round}\\left(\\frac{F}{Q}\\right)",
+  metrics:
+    "\\mathrm{MSE}=\\tfrac{1}{3N}\\sum_i\\sum_c (x_{i,c}-y_{i,c})^2,\\quad \\mathrm{PSNR}=10\\log_{10}\\frac{255^2}{\\mathrm{MSE}},\\quad \\mathrm{SSIM}=\\frac{(2\\mu_x\\mu_y+C_1)(2\\sigma_{xy}+C_2)}{(\\mu_x^2+\\mu_y^2+C_1)(\\sigma_x^2+\\sigma_y^2+C_2)}",
 };
 
 export function TheoryPanel({ topic }: { topic: TheoryTopic }) {

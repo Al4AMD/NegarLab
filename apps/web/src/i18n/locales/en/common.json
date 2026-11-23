@@ -109,7 +109,9 @@
       "point": "Point ops",
       "sampling": "Sampling",
       "spatial": "Filters",
-      "frequency": "Frequency"
+      "frequency": "Frequency",
+      "compression": "Compress",
+      "metrics": "Metrics"
     },
     "reset": "Reset preview",
     "point": {
@@ -169,6 +171,51 @@
       "width": "Band width",
       "order": "Order",
       "apply": "Apply filter"
+    },
+    "compression": {
+      "quality": "JPEG quality",
+      "encoded": "Encoded size",
+      "bpp": "Bits / pixel",
+      "ratio": "Compression",
+      "lossless": "Lossless codecs",
+      "method": "Method",
+      "bytes": "Bytes",
+      "savings": "Savings",
+      "quantTable": "Luma quantization table",
+      "block": "8×8 block inspector",
+      "channels": {
+        "y": "Y",
+        "cb": "Cb",
+        "cr": "Cr"
+      },
+      "source": "Source samples",
+      "dct": "DCT coefficients",
+      "quantized": "Quantized",
+      "reconstructed": "Reconstructed",
+      "dcDiff": "DC differential",
+      "rle": "AC run/size",
+      "methods": {
+        "rle": "RLE",
+        "huffman": "Huffman",
+        "lzw": "LZW",
+        "dpcm": "DPCM",
+        "png": "PNG filters"
+      },
+      "levelShifted": "Level-shifted (x−128)",
+      "zigzag": "Zigzag scan",
+      "basis": "64 DCT basis images"
+    },
+    "metrics": {
+      "needPreview": "Apply an operation (for example JPEG compression) to create a comparison image.",
+      "mse": "MSE",
+      "psnr": "PSNR",
+      "ssim": "SSIM",
+      "msSsim": "MS-SSIM",
+      "heatmap": "Error heatmap",
+      "rd": "Rate-distortion",
+      "computeRd": "Compute rate-distortion",
+      "quality": "JPEG quality",
+      "ssimMap": "SSIM map"
     }
   },
   "transport": {
@@ -188,6 +235,8 @@
     "point": "Point operations map each input level to an output level with a lookup table. Equalization uses the cumulative histogram; gamma and log curves compress or expand tones without spatial filtering.",
     "sampling": "Quantization reduces the number of gray levels to 2^bits; nearest-neighbor downsampling keeps one source pixel per output pixel and can cause aliasing.",
     "spatial": "A spatial filter replaces each pixel with a weighted sum of its neighborhood. Smoothing kernels average noise; sharpen and unsharp add high-frequency detail; median rejects outliers; gradient operators estimate edges.",
-    "frequency": "The 2D Fourier transform maps an image to spatial frequencies. Lowpass filters keep smooth structure, highpass keeps edges, bandpass keeps oriented texture, and notch filters suppress specific periodic noise."
+    "frequency": "The 2D Fourier transform maps an image to spatial frequencies. Lowpass filters keep smooth structure, highpass keeps edges, bandpass keeps oriented texture, and notch filters suppress specific periodic noise.",
+    "compression": "JPEG splits the image into 8×8 blocks, subtracts 128, applies the DCT, divides each coefficient by a quality-scaled quantization step, and rounds. Most high-frequency coefficients become zero. The decoder dequantizes, applies the inverse DCT, and clips back to bytes. The entropy size is an estimate and excludes headers.",
+    "metrics": "MSE averages squared RGB error. PSNR converts it to a logarithmic decibel scale. SSIM compares local mean, variance, and covariance in a Gaussian window, so it tracks perceived structure; MS-SSIM repeats this over five scales."
   }
 }
