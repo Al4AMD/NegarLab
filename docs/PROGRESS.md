@@ -6,7 +6,7 @@ Living status log. Update after every task; keep claims verified.
 |---|---|---|
 | W0 | Foundation: monorepo, shell, ingest, jobs, golden vectors, Docker, docs | Done |
 | W1 | I01 fundamentals, I03 histogram/point ops | Done |
-| W2 | I04 spatial filters, I05 frequency domain | Planned |
+| W2 | I04 spatial filters, I05 frequency domain | Done |
 | W3 | I09 compression, I10 quality metrics | Planned |
 | W4 | I02 color spaces, I06 restoration, I07 morphology | Planned |
 | W5 | I08 geometric, I11 color reduction, I12 segmentation, I13 security | Planned |
@@ -14,6 +14,13 @@ Living status log. Update after every task; keep claims verified.
 | W7 | I15 education layer, I17 quality of life, polish and hardening | Planned |
 
 ## Log
+
+### 2026-11-23 — W2
+
+- W2 plan committed (`docs/superpowers/plans/2026-11-23-w2-spatial-frequency.md`).
+- `@negarlab/ip`: convolution kernels, mean/Gaussian/sharpen/unsharp, median, bilateral, Sobel/Prewitt/Laplacian/LoG/Canny, 2D radix-2 FFT, magnitude/phase, low/high/band/notch filters; NumPy golden fixture; 44 tests green.
+- Web: spatial and frequency dock tabs with live previews, spectrum view, filter controls, bilingual theory; e2e exercises spatial and frequency previews.
+- Close-out: `pnpm check`, API pytest (15), ruff/mypy, web build, Playwright e2e, golden reproducibility, `docker compose build` green.
 
 ### 2026-11-23 — W1
 
