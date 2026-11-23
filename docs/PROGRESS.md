@@ -4,7 +4,7 @@ Living status log. Update after every task; keep claims verified.
 
 | Wave | Scope | Status |
 |---|---|---|
-| W0 | Foundation: monorepo, shell, ingest, jobs, golden vectors, Docker, docs | In progress |
+| W0 | Foundation: monorepo, shell, ingest, jobs, golden vectors, Docker, docs | Done |
 | W1 | I01 fundamentals, I03 histogram/point ops | Planned |
 | W2 | I04 spatial filters, I05 frequency domain | Planned |
 | W3 | I09 compression, I10 quality metrics | Planned |
@@ -23,3 +23,4 @@ Living status log. Update after every task; keep claims verified.
 - Web shell: bilingual RTL/LTR, light/dark tokens, health badge, worker system check, Playwright smoke.
 - Docker: API + Caddy web + compose.
 - Docs, license, demo image generator.
+- Close-out: `pnpm check`, API pytest (15), golden reproducibility, web build, Playwright e2e, Docker build all green.
