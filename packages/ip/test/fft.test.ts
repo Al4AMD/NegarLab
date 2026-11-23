@@ -17,7 +17,9 @@ describe("fft", () => {
     const values = Array.from({ length: 16 }, (_, i) => ((i * 37) % 17) / 16);
     const source = plane(4, 4, values);
     const restored = ifft2(fft2(source));
-    restored.data.forEach((value, index) => expect(value).toBeCloseTo(values[index] ?? 0, 6));
+    restored.data.forEach((value, index) => {
+      expect(value).toBeCloseTo(values[index] ?? 0, 6);
+    });
   });
 
   it("satisfies Parseval", () => {
@@ -45,7 +47,9 @@ describe("fft", () => {
       ),
     );
     const shifted = fftShift(fftShift(spectrum));
-    shifted.re.forEach((value, index) => expect(value).toBeCloseTo(spectrum.re[index] ?? 0, 6));
+    shifted.re.forEach((value, index) => {
+      expect(value).toBeCloseTo(spectrum.re[index] ?? 0, 6);
+    });
     for (const display of [fftMagnitude(shifted), fftPhase(shifted)]) {
       display.data.forEach((value) => {
         expect(value).toBeGreaterThanOrEqual(0);

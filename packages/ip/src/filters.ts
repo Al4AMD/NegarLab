@@ -9,11 +9,11 @@ export interface Kernel {
 function kernelFromRows(rows: readonly (readonly number[])[]): Kernel {
   const size = rows.length;
   const weights = new Float64Array(size * size);
-  rows.forEach((row, y) =>
-    row.forEach((value, x) => {
-      weights[y * size + x] = value;
-    }),
-  );
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      weights[y * size + x] = rows[y]?.[x] ?? 0;
+    }
+  }
   return { size, weights };
 }
 
