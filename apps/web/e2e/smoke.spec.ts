@@ -47,6 +47,19 @@ test("bilingual shell, theme toggle, and worker system check", async ({ page }) 
   await expect(page.getByTestId("stage-preview")).toBeVisible();
   await page.getByTestId("sampling-reset").click();
 
+  await page.getByTestId("tab-spatial").click();
+  await page.getByTestId("spatial-mean").click();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("spatial-reset").click();
+  await expect(page.getByTestId("stage-preview")).toHaveCount(0);
+
+  await page.getByTestId("tab-frequency").click();
+  await expect(page.getByTestId("spectrum-view")).toBeVisible();
+  await page.getByTestId("frequency-apply").click();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("frequency-reset").click();
+  await expect(page.getByTestId("stage-preview")).toHaveCount(0);
+
   await page.getByRole("button", { name: "System check" }).click();
   const readout = page.getByTestId("stats-readout");
   await expect(readout).toBeVisible();

@@ -3,15 +3,17 @@ import { useTranslation } from "react-i18next";
 import { useImageStore } from "../lib/imageStore";
 import { createIpWorker, type IpWorkerHandle } from "../lib/ipClient";
 import type { ImageAnalysis } from "../workers/ip.worker";
+import { FrequencyPanel } from "./FrequencyPanel";
 import { HistogramView } from "./HistogramView";
 import { Inspector } from "./Inspector";
 import { PointOpsPanel } from "./PointOpsPanel";
 import { SamplingPanel } from "./SamplingPanel";
+import { SpatialPanel } from "./SpatialPanel";
 import { TheoryPanel } from "./TheoryPanel";
 
 const CHANNELS = ["luma", "r", "g", "b"] as const;
 type Channel = (typeof CHANNELS)[number];
-const TABS = ["inspect", "point", "sampling"] as const;
+const TABS = ["inspect", "point", "sampling", "spatial", "frequency"] as const;
 type Tab = (typeof TABS)[number];
 
 function channelIndex(channel: Channel): 0 | 1 | 2 {
@@ -71,7 +73,7 @@ export function ParameterDock() {
     >
       <h2 className="text-[10px] uppercase tracking-[0.18em] text-slate">{t("dock.title")}</h2>
 
-      <nav className="flex gap-1" aria-label={t("dock.title")}>
+      <nav className="flex flex-wrap gap-1" aria-label={t("dock.title")}>
         {TABS.map((option) => (
           <button
             key={option}
@@ -160,6 +162,8 @@ export function ParameterDock() {
 
       {tab === "point" && <PointOpsPanel />}
       {tab === "sampling" && <SamplingPanel />}
+      {tab === "spatial" && <SpatialPanel />}
+      {tab === "frequency" && <FrequencyPanel />}
     </aside>
   );
 }

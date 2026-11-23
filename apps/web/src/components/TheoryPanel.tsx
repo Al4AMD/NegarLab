@@ -2,7 +2,7 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 import { useTranslation } from "react-i18next";
 
-export type TheoryTopic = "inspect" | "point" | "sampling";
+export type TheoryTopic = "inspect" | "point" | "sampling" | "spatial" | "frequency";
 
 const FORMULAS: Record<TheoryTopic, string> = {
   inspect:
@@ -11,6 +11,9 @@ const FORMULAS: Record<TheoryTopic, string> = {
     "s=\\frac{\\operatorname{cdf}(r)-\\operatorname{cdf}_{\\min}}{1-\\operatorname{cdf}_{\\min}},\\quad s=v^{\\gamma},\\quad s=\\frac{\\log(1+255v)}{\\log 256}",
   sampling:
     "s_q=\\frac{\\operatorname{round}(v\\,(2^b-1))}{2^b-1},\\quad x'=\\left\\lfloor x\\,\\frac{W_s}{W_d}\\right\\rfloor",
+  spatial:
+    "g(x,y)=\\sum_s\\sum_t w(s,t)\\,f(x-s,y-t),\\quad G_\\sigma=\\frac{1}{2\\pi\\sigma^2}e^{-(x^2+y^2)/(2\\sigma^2)}",
+  frequency: "F(u,v)=\\sum_x\\sum_y f(x,y)\\,e^{-2\\pi i(ux/M+vy/N)}",
 };
 
 export function TheoryPanel({ topic }: { topic: TheoryTopic }) {
