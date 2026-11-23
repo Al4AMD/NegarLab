@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { rgbaToPlanes } from "../src/channels";
+import { clahe } from "../src/clahe";
 import { contrastStretch, equalize } from "../src/equalize";
 import { channelHistogram, lumaHistogram } from "../src/histogram";
 import { rgbaToLuma } from "../src/luma";
@@ -60,5 +61,19 @@ describe("W1 golden vectors", () => {
     expect(Array.from(threshold(input, fixture.expected.otsu).data)).toEqual(
       fixture.expected.threshold,
     );
+  });
+
+  it("matches CLAHE within one byte", () => {
+    const actual = clahe(input, {
+      tiles: fixture.expected.clahe.tiles,
+      clipLimit: fixture.expected.clahe.clipLimit,
+    });
+    const expected = fixture.expected.clahe.rgba;
+    expect(actual.data.length).toBe(expected.length);
+    let maxDelta = 0;
+    actual.data.forEach((value, index) => {
+      maxDelta = Math.max(maxDelta, Math.abs(value - (expected[index] ?? 0)));
+    });
+    expect(maxDelta).toBeLessThanOrEqual(1);
   });
 });

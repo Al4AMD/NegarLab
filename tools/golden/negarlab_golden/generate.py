@@ -196,6 +196,58 @@ def gray_ramp() -> np.ndarray:
     return np.stack([values, values, values, alpha], axis=-1)
 
 
+
+def clahe_tile_lut(channel: np.ndarray, x0: int, x1: int, y0: int, y1: int, clip_limit: float) -> np.ndarray:
+    tile = channel[y0:y1, x0:x1].reshape(-1)
+    counts = np.bincount(tile, minlength=256).astype(np.float64)
+    total = counts.sum()
+    if total == 0:
+        return np.arange(256)
+    clip = max(1, int(np.floor(clip_limit * total / 256)))
+    excess = np.maximum(counts - clip, 0.0).sum()
+    counts = np.minimum(counts, clip) + excess / 256
+    integral = np.floor(np.cumsum(counts) + 0.5).astype(np.int64)
+    grand = integral.sum()
+    cdf_values = np.cumsum(integral) / grand
+    occupied = np.flatnonzero(integral)
+    cdf_min = cdf_values[occupied[0]]
+    scale = 1.0 - cdf_min
+    if scale <= 0:
+        return np.arange(256)
+    return np.clip(np.floor((cdf_values - cdf_min) / scale * 255 + 0.5), 0, 255).astype(np.int64)
+
+
+def clahe(rgba: np.ndarray, tiles: int = 2, clip_limit: float = 1.5) -> np.ndarray:
+    height, width = rgba.shape[:2]
+    tile_count = min(tiles, width, height)
+    out = rgba.copy()
+    for channel_index in range(3):
+        channel = rgba[..., channel_index]
+        luts = np.zeros((tile_count, tile_count, 256), dtype=np.int64)
+        for ty in range(tile_count):
+            y0 = (ty * height) // tile_count
+            y1 = ((ty + 1) * height) // tile_count
+            for tx in range(tile_count):
+                x0 = (tx * width) // tile_count
+                x1 = ((tx + 1) * width) // tile_count
+                luts[ty, tx] = clahe_tile_lut(channel, x0, x1, y0, y1, clip_limit)
+        for y in range(height):
+            fy = min(tile_count - 1, max(0.0, (y + 0.5) * tile_count / height - 0.5))
+            ty0 = int(np.floor(fy))
+            ty1 = min(tile_count - 1, ty0 + 1)
+            ay = fy - ty0
+            for x in range(width):
+                fx = min(tile_count - 1, max(0.0, (x + 0.5) * tile_count / width - 0.5))
+                tx0 = int(np.floor(fx))
+                tx1 = min(tile_count - 1, tx0 + 1)
+                ax = fx - tx0
+                value = int(channel[y, x])
+                top = luts[ty0, tx0, value] * (1 - ax) + luts[ty0, tx1, value] * ax
+                bottom = luts[ty1, tx0, value] * (1 - ax) + luts[ty1, tx1, value] * ax
+                out[y, x, channel_index] = int(np.floor(top * (1 - ay) + bottom * ay + 0.5))
+    return out
+
+
 def build_w1_vectors() -> dict:
     rgba = pattern_rgba()
     ch = channels(rgba)
@@ -244,6 +296,11 @@ def build_w1_vectors() -> dict:
             "match": match_histogram(rgba, reference).reshape(-1).tolist(),
             "otsu": threshold_value,
             "threshold": threshold_image(rgba, threshold_bin).reshape(-1).tolist(),
+            "clahe": {
+                "tiles": 2,
+                "clipLimit": 1.5,
+                "rgba": clahe(rgba, 2, 1.5).reshape(-1).tolist(),
+            },
         },
         "tolerance": TOLERANCE,
         "source": "tools/golden/negarlab_golden/generate.py (numpy float64; float32 luma)",

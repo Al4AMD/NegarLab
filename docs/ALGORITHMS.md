@@ -36,6 +36,10 @@ Stretch uses nearest-rank quantiles `floor(p*(n-1))` per channel. Equalization u
 
 Otsu maximizes between-class variance over 256 luma bins; threshold keeps original alpha and emits only 0/255. Constant planes yield 0. Golden covers threshold on the test pattern.
 
+### CLAHE — `packages/ip/src/clahe.ts`
+
+Per-channel contrast-limited adaptive equalization with uniform tiles, clipped histogram redistribution (`excess/256`), cumulative lookup, and bilinear interpolation between tile LUTs. Defaults tiles 8, clip 2; invalid tiles/clip raise `RangeError`. Golden covers 2 tiles at clip 1.5 with a one-byte tolerance; tests cover flat-image identity and invalid options.
+
 ### Quantization, nearest resize, histogram matching — `packages/ip/src/sampling.ts`
 
 Quantization to `2^bits` levels, integer bits 1..8; nearest-neighbor resize with clamped source indices; per-channel CDF matching to the reference image. Golden covers 3-bit, 8→4 resize, and matching.
