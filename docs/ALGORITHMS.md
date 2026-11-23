@@ -56,6 +56,20 @@ Row-column iterative radix-2 FFT, zero-padding each dimension to the next power 
 
 Luma-driven frequency masks in shifted coordinates: ideal, Butterworth, and Gaussian low/high/band filters plus symmetric notch suppression; inverse FFT restores RGBA with alpha preserved. Golden covers Gaussian lowpass at cutoff 0.35.
 
+## Implemented (W3)
+
+### DCT and JPEG pipeline — `packages/ip/src/dct.ts`, `jpeg.ts`
+
+Orthonormal 8×8 DCT-II with separable row/column passes, inverse transform, zigzag scan, and the Annex K luminance/chrominance quantization tables scaled by `q < 50 ? 5000/q : 200 − 2q`. JPEG converts RGB to BT.601 YCbCr (4:4:4, no chroma subsampling), edge-replicates partial blocks, subtracts 128, transforms, quantizes with `floor(x + 0.5)`, dequantizes, inverse-transforms, and clips. Entropy size is an estimate: DC differential and AC run/size symbols use separate canonical Huffman tables; headers are excluded. Alpha is preserved. Golden: `w3-compression-metrics.json` (DCT, tables, quality 50/90, 9×7 odd size); tests cover quality 1/100, odd sizes, and block stages.
+
+### Lossless codecs and PNG filters — `packages/ip/src/huffman.ts`, `lossless.ts`
+
+Byte-pair RLE, canonical Huffman, fixed 16-bit LZW (clear-free, dictionary grows to 65536), modulo-256 DPCM with the left predictor, and PNG None/Sub/Up/Average/Paeth filters. Adaptive filtering picks the row filter with the smallest sum of absolute signed residuals; PNG filtering always uses original bytes for left/up predictors. Huffman decode needs symbol lengths and the expected byte count because lengths are not serialized. Golden: DPCM, every PNG filter, and adaptive row choices; tests cover empty, single-byte, constant, and random round-trips plus Paeth edges.
+
+### Quality metrics — `packages/ip/src/metrics.ts`
+
+MSE over RGB (0..255), PSNR with Infinity for identical images, SSIM on luma with an 11×11 Gaussian window (σ=1.5), C1=(0.01·255)², C2=(0.03·255)², and clamped borders; MS-SSIM uses the standard five weights, 2×2 average pooling, and renormalizes when fewer scales exist. Error heatmap maps mean absolute RGB error through a black→red→yellow→white ramp with gain 4. Golden: MSE/PSNR/SSIM mean and map for the pattern vs JPEG quality 50; tests cover identical images, constant shifts, small images, and heatmap saturation.
+
 ## Planned (later waves)
 
-Morphology, geometric transforms, JPEG pipeline, wavelets, metrics, dithering, segmentation, steganography, ML inference. Add the formula, reference, and test location when implemented.
+Morphology, geometric transforms, wavelets, dithering, segmentation, steganography, ML inference. Add the formula, reference, and test location when implemented.
