@@ -13,7 +13,23 @@ Living status log. Update after every task; keep claims verified.
 | W6 | I14 AI tools | Planned |
 | W7 | I15 education layer, I17 quality of life, polish and hardening | Planned |
 
+## Next session
+
+**Start here:** W3 — I09 compression and I10 quality metrics. W2 is merged and `dev` is synced with `main`.
+
+1. Pull, install, verify baseline: `git pull`, `pnpm install`, `pnpm check && pnpm test:api`.
+2. Read the spec sections for I09/I10 (`docs/superpowers/specs/2026-11-23-negarlab-design.md` §5) and the W3 row in the table above.
+3. Write `docs/superpowers/plans/YYYY-MM-DD-w3-compression-metrics.md` before coding. Suggested first slice: MSE/PSNR/SSIM + maps and error heatmap (I10, pure `@negarlab/ip`), then lossless RLE/Huffman and the JPEG pipeline steps (I09).
+4. Keep backend codec work (JXL/HEIC/J2K subprocesses) behind its own task; record encoders and licenses in `docs/THIRD_PARTY.md` before adding them.
+5. Environment notes: `gh` is not installed (use the GitHub REST API); host port 8080 is occupied, so verify Docker on `NEGARLAB_HTTP_PORT=8081`.
+
 ## Log
+
+### 2026-11-23 — W2 merged
+
+- PR #3 merged to `main` (`65657c6`); `dev` fast-forwarded and pushed.
+- W0–W2 done; all documented checks green at merge (44 ip + 3 web tests, 15 API tests, e2e, build, Docker).
+- No W3 plan or code started.
 
 ### 2026-11-23 — W2
 
