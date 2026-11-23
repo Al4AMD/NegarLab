@@ -25,8 +25,8 @@ export function SystemCheck() {
     setStats(null);
     try {
       workerRef.current ??= createIpWorker();
-      const result = await workerRef.current.api.lumaAndStats(generateTestImage());
-      setStats(result);
+      const result = await workerRef.current.api.analyze(generateTestImage());
+      setStats(result.stats);
       setStatus("done");
     } catch {
       workerRef.current?.terminate();

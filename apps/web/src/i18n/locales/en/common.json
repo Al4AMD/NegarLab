@@ -85,6 +85,24 @@
     "empty": {
       "title": "Nothing to configure yet",
       "body": "Each module's controls will appear here."
+    },
+    "analyzing": "Analyzing image…",
+    "error": "Image analysis failed.",
+    "histogram": {
+      "title": "Histogram",
+      "caption": "256-bin histogram"
+    },
+    "channels": {
+      "r": "Red",
+      "g": "Green",
+      "b": "Blue",
+      "luma": "Luma"
+    },
+    "inspector": {
+      "title": "Pixel inspector",
+      "hint": "Click the image to inspect a pixel and its 8×8 matrix.",
+      "position": "Position",
+      "luma": "Luma"
     }
   },
   "transport": {

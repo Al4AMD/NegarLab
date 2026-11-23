@@ -12,6 +12,7 @@ const CORNERS = [
 
 function ImageCanvas() {
   const image = useImageStore((state) => state.image);
+  const selectPixel = useImageStore((state) => state.selectPixel);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -40,7 +41,16 @@ function ImageCanvas() {
         ref={canvasRef}
         data-testid="stage-image"
         aria-label="loaded image"
-        className="mx-auto block max-h-[62vh] w-auto max-w-full"
+        className="mx-auto block max-h-[62vh] w-auto max-w-full cursor-crosshair"
+        onPointerDown={(event) => {
+          const rect = event.currentTarget.getBoundingClientRect();
+          const x = Math.floor(((event.clientX - rect.left) / rect.width) * image.width);
+          const y = Math.floor(((event.clientY - rect.top) / rect.height) * image.height);
+          selectPixel(
+            Math.min(image.width - 1, Math.max(0, x)),
+            Math.min(image.height - 1, Math.max(0, y)),
+          );
+        }}
       />
     </div>
   );

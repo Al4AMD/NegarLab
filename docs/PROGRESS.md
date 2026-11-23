@@ -20,7 +20,8 @@ Living status log. Update after every task; keep claims verified.
 - W1 plan committed (`docs/superpowers/plans/2026-11-23-w1-fundamentals.md`).
 - `@negarlab/ip`: channels/histograms, negative/log/gamma, stretch/equalize, Otsu/threshold, quantization, nearest resize, histogram matching; NumPy golden fixture; 24 tests green.
 - Web: demo and upload loading, canonical RGBA decode, stage canvas, bilingual errors; e2e loads zone plate.
-- Pending in W1: inspector/statistics/histogram UI, point-op and sampling panels, theory panel, CLAHE.
+- Web: pixel inspector with clamped 8×8 matrix, worker-side stats and channel histograms.
+- Pending in W1: point-op and sampling panels, theory panel, CLAHE.
 
 ### 2026-11-23 — W0
 
