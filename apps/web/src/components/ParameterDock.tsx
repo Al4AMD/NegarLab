@@ -5,9 +5,14 @@ import { createIpWorker, type IpWorkerHandle } from "../lib/ipClient";
 import type { ImageAnalysis } from "../workers/ip.worker";
 import { HistogramView } from "./HistogramView";
 import { Inspector } from "./Inspector";
+import { PointOpsPanel } from "./PointOpsPanel";
+import { SamplingPanel } from "./SamplingPanel";
+import { TheoryPanel } from "./TheoryPanel";
 
 const CHANNELS = ["luma", "r", "g", "b"] as const;
 type Channel = (typeof CHANNELS)[number];
+const TABS = ["inspect", "point", "sampling"] as const;
+type Tab = (typeof TABS)[number];
 
 function channelIndex(channel: Channel): 0 | 1 | 2 {
   return channel === "r" ? 0 : channel === "g" ? 1 : 2;
@@ -15,8 +20,11 @@ function channelIndex(channel: Channel): 0 | 1 | 2 {
 
 export function ParameterDock() {
   const { t } = useTranslation();
-  const image = useImageStore((state) => state.image);
+  const source = useImageStore((state) => state.image);
+  const preview = useImageStore((state) => state.preview);
   const selected = useImageStore((state) => state.selected);
+  const [tab, setTab] = useState<Tab>("inspect");
+  const image = preview ?? source;
   const [analysis, setAnalysis] = useState<ImageAnalysis | null>(null);
   const [channel, setChannel] = useState<Channel>("luma");
   const [failed, setFailed] = useState(false);
@@ -62,6 +70,25 @@ export function ParameterDock() {
       data-testid="parameter-dock"
     >
       <h2 className="text-[10px] uppercase tracking-[0.18em] text-slate">{t("dock.title")}</h2>
+
+      <nav className="flex gap-1" aria-label={t("dock.title")}>
+        {TABS.map((option) => (
+          <button
+            key={option}
+            type="button"
+            data-testid={`tab-${option}`}
+            aria-pressed={tab === option}
+            onClick={() => setTab(option)}
+            className={`rounded-sm border px-2 py-1 text-[10px] transition-colors ${
+              tab === option
+                ? "border-safelight text-chalk"
+                : "border-edge text-slate hover:text-chalk"
+            }`}
+          >
+            {t(`dock.tabs.${option}`)}
+          </button>
+        ))}
+      </nav>
 
       {!image && (
         <div className="border border-dashed border-edge p-4">
@@ -127,8 +154,12 @@ export function ParameterDock() {
             </h3>
             <Inspector image={image} selected={selected} />
           </section>
+          <TheoryPanel topic="inspect" />
         </>
       )}
+
+      {tab === "point" && <PointOpsPanel />}
+      {tab === "sampling" && <SamplingPanel />}
     </aside>
   );
 }

@@ -35,6 +35,9 @@ importers:
       i18next:
         specifier: ^27.2.4
         version: 27.2.4(typescript@7.0.2)
+      katex:
+        specifier: ^0.19.1
+        version: 0.19.1
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -54,6 +57,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.5
         version: 4.3.5(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0))
+      '@types/katex':
+        specifier: ^0.16.8
+        version: 0.16.8
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
@@ -420,6 +426,9 @@ packages:
   '@types/estree@1.0.10':
     resolution: {integrity: sha512-lTyOMnOcmRBzdCv6/4zUZCrEhV0xrqQiUZBZtVcbmLHBXKLnN8q89v/wKRF/Q0HbwVsqbIG3o5HDoFl9sduM+g==}
 
+  '@types/katex@0.16.8':
+    resolution: {integrity: sha512-trgaNyfU+Xh2Tc+ABIb44a5AYUpicB3uwirOioeOkNPPbmgRNtcWyDeeFRzjPZENO9Vq8gvVqfhaaXWLlevVwg==}
+
   '@types/node@26.6.6':
     resolution: {integrity: sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==}
 
@@ -592,6 +601,10 @@ packages:
   comlink@4.4.2:
     resolution: {integrity: sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==}
 
+  commander@15.1.0:
+    resolution: {integrity: sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ==}
+    engines: {node: '>=22.12.0'}
+
   csstype@3.2.4:
     resolution: {integrity: sha512-PoKaoPzQapnEoqUSnHx1u6W6ku8CVEgKsnpmmzU3m1nwkidpPBQ8V/Zq2+bWNrsOKoKLwTGdbx6xF7BXP1zLVQ==}
 
@@ -644,6 +657,10 @@ packages:
 
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
+    hasBin: true
+
+  katex@0.19.1:
+    resolution: {integrity: sha512-jG8uKntjSEcm2EpQOh0XturpPuuC9r3Sq5HLHdsFdWZT27E672SF19QEi+of0/YeOy15lDgRhKvr5614uRrEfA==}
     hasBin: true
 
   lightningcss-android-arm64@1.33.0:
@@ -1165,6 +1182,8 @@ snapshots:
 
   '@types/estree@1.0.10': {}
 
+  '@types/katex@0.16.8': {}
+
   '@types/node@26.6.6':
     dependencies:
       undici-types: 8.9.0
@@ -1259,6 +1278,8 @@ snapshots:
 
   comlink@4.4.2: {}
 
+  commander@15.1.0: {}
+
   csstype@3.2.4: {}
 
   detect-libc@2.1.2: {}
@@ -1292,6 +1313,10 @@ snapshots:
       typescript: 7.0.2
 
   jiti@2.7.0: {}
+
+  katex@0.19.1:
+    dependencies:
+      commander: 15.1.0
 
   lightningcss-android-arm64@1.33.0:
     optional: true

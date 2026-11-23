@@ -13,11 +13,13 @@ export type DemoName = (typeof DEMO_IMAGES)[number];
 
 interface ImageState {
   image: RgbaImage | null;
+  preview: RgbaImage | null;
   label: string | null;
   loading: boolean;
   errorKey: string | null;
   selected: { x: number; y: number } | null;
   selectPixel: (x: number, y: number) => void;
+  setPreview: (image: RgbaImage | null) => void;
   loadDemo: (name: DemoName) => Promise<void>;
   loadFile: (file: File) => Promise<void>;
   clear: () => void;
@@ -34,12 +36,14 @@ async function ingestFile(file: File): Promise<string> {
 
 export const useImageStore = create<ImageState>((set) => ({
   image: null,
+  preview: null,
   label: null,
   loading: false,
   errorKey: null,
   selected: null,
 
   selectPixel: (x, y) => set({ selected: { x, y } }),
+  setPreview: (preview) => set(preview ? { preview } : { preview: null, selected: null }),
 
   loadDemo: async (name) => {
     set({ loading: true, errorKey: null });
@@ -47,7 +51,7 @@ export const useImageStore = create<ImageState>((set) => ({
       const response = await fetch(`/demo/${name}.png`);
       if (!response.ok) throw new Error("demo_fetch_failed");
       const image = await decodeImageBlob(await response.blob());
-      set({ image, label: `${name}.png`, loading: false, selected: null });
+      set({ image, preview: null, label: `${name}.png`, loading: false, selected: null });
     } catch {
       set({ loading: false, errorKey: "stage.errors.load" });
     }
@@ -60,11 +64,19 @@ export const useImageStore = create<ImageState>((set) => ({
       const response = await fetch(`/api/v1/images/${imageId}`);
       if (!response.ok) throw new Error("image_fetch_failed");
       const image = await decodeImageBlob(await response.blob());
-      set({ image, label: file.name, loading: false, selected: null });
+      set({ image, preview: null, label: file.name, loading: false, selected: null });
     } catch {
       set({ loading: false, errorKey: "stage.errors.upload" });
     }
   },
 
-  clear: () => set({ image: null, label: null, loading: false, errorKey: null, selected: null }),
+  clear: () =>
+    set({
+      image: null,
+      preview: null,
+      label: null,
+      loading: false,
+      errorKey: null,
+      selected: null,
+    }),
 }));

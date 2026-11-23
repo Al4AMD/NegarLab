@@ -17,6 +17,7 @@ Record direct dependencies and their licenses. Verify before adding; update this
 | @playwright/test | Apache-2.0 | E2E smoke |
 | @fontsource/space-grotesk, ibm-plex-sans, ibm-plex-mono, vazirmatn | OFL-1.1 | Fonts |
 | @biomejs/biome | MIT | Lint/format |
+| katex, @types/katex | MIT | Math typesetting in theory panels |
 
 ## Backend and tools
 

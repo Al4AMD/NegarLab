@@ -63,7 +63,7 @@
   "stage": {
     "empty": {
       "title": "The stage is empty",
-      "body": "Pick a module from the rail. Image upload arrives in the next wave."
+      "body": "Load a demo image or upload your own to begin."
     },
     "aria": "Image stage",
     "demoLabel": "Demo images",
@@ -103,6 +103,29 @@
       "hint": "Click the image to inspect a pixel and its 8×8 matrix.",
       "position": "Position",
       "luma": "Luma"
+    },
+    "tabs": {
+      "inspect": "Inspect",
+      "point": "Point ops",
+      "sampling": "Sampling"
+    },
+    "reset": "Reset preview",
+    "point": {
+      "ops": {
+        "negative": "Negative",
+        "log": "Log",
+        "gamma": "Gamma",
+        "equalize": "Equalize",
+        "stretch": "Stretch",
+        "otsu": "Otsu threshold",
+        "clahe": "CLAHE"
+      },
+      "tiles": "Tiles",
+      "clip": "Clip limit"
+    },
+    "sampling": {
+      "bits": "Bit depth",
+      "downsample": "Downsample"
     }
   },
   "transport": {
@@ -115,5 +138,11 @@
       "variance": "Variance",
       "entropy": "Entropy"
     }
+  },
+  "theory": {
+    "title": "Theory",
+    "inspect": "Mean and variance describe brightness and spread. Entropy measures how many bits per pixel the histogram needs. A flat histogram means high entropy.",
+    "point": "Point operations map each input level to an output level with a lookup table. Equalization uses the cumulative histogram; gamma and log curves compress or expand tones without spatial filtering.",
+    "sampling": "Quantization reduces the number of gray levels to 2^bits; nearest-neighbor downsampling keeps one source pixel per output pixel and can cause aliasing."
   }
 }

@@ -12,26 +12,29 @@ const CORNERS = [
 
 function ImageCanvas() {
   const image = useImageStore((state) => state.image);
+  const preview = useImageStore((state) => state.preview);
   const selectPixel = useImageStore((state) => state.selectPixel);
+  const view = preview ?? image;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !image) return;
-    canvas.width = image.width;
-    canvas.height = image.height;
+    if (!canvas || !view) return;
+    canvas.width = view.width;
+    canvas.height = view.height;
     const context = canvas.getContext("2d");
     if (!context) return;
-    const pixels = new Uint8ClampedArray(image.data.length);
-    pixels.set(image.data);
-    context.putImageData(new ImageData(pixels, image.width, image.height), 0, 0);
-  }, [image]);
+    const pixels = new Uint8ClampedArray(view.data.length);
+    pixels.set(view.data);
+    context.putImageData(new ImageData(pixels, view.width, view.height), 0, 0);
+  }, [view]);
 
-  if (!image) return null;
+  if (!view) return null;
 
   return (
     <div
       className="border border-edge p-2"
+      data-testid={preview ? "stage-preview" : undefined}
       style={{
         backgroundImage: "repeating-conic-gradient(#2C3138 0% 25%, #1E2227 0% 50%)",
         backgroundSize: "16px 16px",
@@ -44,11 +47,11 @@ function ImageCanvas() {
         className="mx-auto block max-h-[62vh] w-auto max-w-full cursor-crosshair"
         onPointerDown={(event) => {
           const rect = event.currentTarget.getBoundingClientRect();
-          const x = Math.floor(((event.clientX - rect.left) / rect.width) * image.width);
-          const y = Math.floor(((event.clientY - rect.top) / rect.height) * image.height);
+          const x = Math.floor(((event.clientX - rect.left) / rect.width) * view.width);
+          const y = Math.floor(((event.clientY - rect.top) / rect.height) * view.height);
           selectPixel(
-            Math.min(image.width - 1, Math.max(0, x)),
-            Math.min(image.height - 1, Math.max(0, y)),
+            Math.min(view.width - 1, Math.max(0, x)),
+            Math.min(view.height - 1, Math.max(0, y)),
           );
         }}
       />
@@ -59,6 +62,7 @@ function ImageCanvas() {
 export function Stage() {
   const { t } = useTranslation();
   const image = useImageStore((state) => state.image);
+  const preview = useImageStore((state) => state.preview);
   const label = useImageStore((state) => state.label);
   const loading = useImageStore((state) => state.loading);
   const errorKey = useImageStore((state) => state.errorKey);
@@ -78,7 +82,7 @@ export function Stage() {
           <p className="text-xs text-slate">
             {label} ·{" "}
             <span className="numeric">
-              {image.width}×{image.height}
+              {(preview ?? image).width}×{(preview ?? image).height}
             </span>
           </p>
         </>
