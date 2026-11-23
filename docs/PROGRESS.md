@@ -5,7 +5,7 @@ Living status log. Update after every task; keep claims verified.
 | Wave | Scope | Status |
 |---|---|---|
 | W0 | Foundation: monorepo, shell, ingest, jobs, golden vectors, Docker, docs | Done |
-| W1 | I01 fundamentals, I03 histogram/point ops | Planned |
+| W1 | I01 fundamentals, I03 histogram/point ops | In progress |
 | W2 | I04 spatial filters, I05 frequency domain | Planned |
 | W3 | I09 compression, I10 quality metrics | Planned |
 | W4 | I02 color spaces, I06 restoration, I07 morphology | Planned |
@@ -14,6 +14,13 @@ Living status log. Update after every task; keep claims verified.
 | W7 | I15 education layer, I17 quality of life, polish and hardening | Planned |
 
 ## Log
+
+### 2026-11-23 — W1 in progress
+
+- W1 plan committed (`docs/superpowers/plans/2026-11-23-w1-fundamentals.md`).
+- `@negarlab/ip`: channels/histograms, negative/log/gamma, stretch/equalize, Otsu/threshold, quantization, nearest resize, histogram matching; NumPy golden fixture; 24 tests green.
+- Web: demo and upload loading, canonical RGBA decode, stage canvas, bilingual errors; e2e loads zone plate.
+- Pending in W1: inspector/statistics/histogram UI, point-op and sampling panels, theory panel, CLAHE.
 
 ### 2026-11-23 — W0
 

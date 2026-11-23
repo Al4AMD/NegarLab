@@ -1,0 +1,65 @@
+import type { RgbaImage } from "@negarlab/ip";
+import { create } from "zustand";
+import { decodeImageBlob } from "./decodeImage";
+
+export const DEMO_IMAGES = [
+  "zone-plate",
+  "gray-ramp",
+  "resolution-wedge",
+  "color-checker",
+] as const;
+
+export type DemoName = (typeof DEMO_IMAGES)[number];
+
+interface ImageState {
+  image: RgbaImage | null;
+  label: string | null;
+  loading: boolean;
+  errorKey: string | null;
+  loadDemo: (name: DemoName) => Promise<void>;
+  loadFile: (file: File) => Promise<void>;
+  clear: () => void;
+}
+
+async function ingestFile(file: File): Promise<string> {
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch("/api/v1/ingest", { method: "POST", body });
+  if (!response.ok) throw new Error("ingest_failed");
+  const summary = (await response.json()) as { image_id: string };
+  return summary.image_id;
+}
+
+export const useImageStore = create<ImageState>((set) => ({
+  image: null,
+  label: null,
+  loading: false,
+  errorKey: null,
+
+  loadDemo: async (name) => {
+    set({ loading: true, errorKey: null });
+    try {
+      const response = await fetch(`/demo/${name}.png`);
+      if (!response.ok) throw new Error("demo_fetch_failed");
+      const image = await decodeImageBlob(await response.blob());
+      set({ image, label: `${name}.png`, loading: false });
+    } catch {
+      set({ loading: false, errorKey: "stage.errors.load" });
+    }
+  },
+
+  loadFile: async (file) => {
+    set({ loading: true, errorKey: null });
+    try {
+      const imageId = await ingestFile(file);
+      const response = await fetch(`/api/v1/images/${imageId}`);
+      if (!response.ok) throw new Error("image_fetch_failed");
+      const image = await decodeImageBlob(await response.blob());
+      set({ image, label: file.name, loading: false });
+    } catch {
+      set({ loading: false, errorKey: "stage.errors.upload" });
+    }
+  },
+
+  clear: () => set({ image: null, label: null, loading: false, errorKey: null }),
+}));

@@ -30,6 +30,9 @@ test("bilingual shell, theme toggle, and worker system check", async ({ page }) 
   await page.getByTestId("theme-toggle").click();
   await expect(html).not.toHaveAttribute("data-theme", before ?? "dark");
 
+  await page.getByTestId("demo-zone-plate").click();
+  await expect(page.getByTestId("stage-image")).toBeVisible();
+
   await page.getByRole("button", { name: "System check" }).click();
   const readout = page.getByTestId("stats-readout");
   await expect(readout).toBeVisible();

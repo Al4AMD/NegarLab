@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planesToRgba, rgbaToPlanes } from "../src/channels";
+import { rgbaToPlanes } from "../src/channels";
 import { contrastStretch, equalize } from "../src/equalize";
 import { channelHistogram, lumaHistogram } from "../src/histogram";
 import { rgbaToLuma } from "../src/luma";

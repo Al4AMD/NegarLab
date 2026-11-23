@@ -64,6 +64,20 @@
     "empty": {
       "title": "The stage is empty",
       "body": "Pick a module from the rail. Image upload arrives in the next wave."
+    },
+    "aria": "Image stage",
+    "demoLabel": "Demo images",
+    "upload": "Upload an image",
+    "loading": "Loading…",
+    "demos": {
+      "zone-plate": "Zone plate",
+      "gray-ramp": "Gray ramp",
+      "resolution-wedge": "Resolution wedge",
+      "color-checker": "Color checker"
+    },
+    "errors": {
+      "load": "Could not load the demo image.",
+      "upload": "Upload failed. Is the backend available?"
     }
   },
   "dock": {
