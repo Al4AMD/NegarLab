@@ -4,6 +4,12 @@
       "**",
       "!**/node_modules",
       "!**/dist",
+      "!**/.venv",
+      "!**/__pycache__",
+      "!**/.pytest_cache",
+      "!**/.mypy_cache",
+      "!**/.ruff_cache",
+      "!**/uv.lock",
       "!**/playwright-report",
       "!**/test-results",
       "!packages/ip/test-data",
@@ -30,5 +36,22 @@
       "quoteStyle": "double",
       "semicolons": "always"
     }
-  }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/web/src/styles/globals.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    }
+  ]
 }

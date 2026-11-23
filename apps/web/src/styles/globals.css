@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Vazirmatn", ui-monospace, monospace;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-paper: var(--paper);
+  --color-chalk: var(--chalk);
+  --color-slate: var(--slate);
+  --color-safelight: var(--safelight);
+  --color-signal: var(--signal);
+  --color-edge: var(--edge);
+}
+
+:root,
+[data-theme="dark"] {
+  --surface: #14161a;
+  --panel: #1e2227;
+  --paper: #f1ebdd;
+  --chalk: #e8e5de;
+  --slate: #9aa0a6;
+  --safelight: #e09a3e;
+  --signal: #63b3a6;
+  --edge: #2c3138;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --surface: #f3f0e9;
+  --panel: #fbf9f4;
+  --paper: #ffffff;
+  --chalk: #1a1c20;
+  --slate: #5d646c;
+  --safelight: #b5721f;
+  --signal: #2c7d72;
+  --edge: #d8d3c7;
+  color-scheme: light;
+}
+
+@layer base {
+  body {
+    @apply bg-surface font-sans text-chalk antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--safelight);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .numeric {
+    direction: ltr;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    unicode-bidi: isolate;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
