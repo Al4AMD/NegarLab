@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      NEGARLAB_STORAGE_DIR: /data
+      NEGARLAB_TTL_MINUTES: ${NEGARLAB_TTL_MINUTES:-60}
+      NEGARLAB_UPLOAD_MAX_BYTES: ${NEGARLAB_UPLOAD_MAX_BYTES:-26214400}
+      NEGARLAB_JOB_STEP_DELAY_MS: ${NEGARLAB_JOB_STEP_DELAY_MS:-50}
+    volumes:
+      - negarlab-data:/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${NEGARLAB_HTTP_PORT:-8080}:80"
+    restart: unless-stopped
+
+volumes:
+  negarlab-data:

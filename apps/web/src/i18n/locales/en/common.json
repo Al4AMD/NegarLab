@@ -1,0 +1,87 @@
+{
+  "app": {
+    "name": "NegarLab",
+    "subtitle": "Interactive image-processing lab"
+  },
+  "header": {
+    "healthLabel": "Server status",
+    "health": {
+      "online": "Server online",
+      "offline": "Server offline",
+      "checking": "Checking"
+    },
+    "themeLabel": "Toggle theme",
+    "languageLabel": "Switch language"
+  },
+  "rail": {
+    "title": "Modules"
+  },
+  "modules": {
+    "I01": {
+      "title": "Digital image fundamentals"
+    },
+    "I02": {
+      "title": "Color spaces"
+    },
+    "I03": {
+      "title": "Histograms and point operations"
+    },
+    "I04": {
+      "title": "Spatial filters"
+    },
+    "I05": {
+      "title": "Frequency-domain processing"
+    },
+    "I06": {
+      "title": "Noise and restoration"
+    },
+    "I07": {
+      "title": "Morphology"
+    },
+    "I08": {
+      "title": "Geometric transforms"
+    },
+    "I09": {
+      "title": "Image compression"
+    },
+    "I10": {
+      "title": "Quality metrics"
+    },
+    "I11": {
+      "title": "Color reduction and halftoning"
+    },
+    "I12": {
+      "title": "Segmentation and features"
+    },
+    "I13": {
+      "title": "Multimedia security"
+    },
+    "I14": {
+      "title": "Artificial intelligence"
+    }
+  },
+  "stage": {
+    "empty": {
+      "title": "The stage is empty",
+      "body": "Pick a module from the rail. Image upload arrives in the next wave."
+    }
+  },
+  "dock": {
+    "title": "Parameters",
+    "empty": {
+      "title": "Nothing to configure yet",
+      "body": "Each module's controls will appear here."
+    }
+  },
+  "transport": {
+    "ready": "NegarLab foundation is ready",
+    "systemCheck": "System check",
+    "systemCheckRunning": "Checking…",
+    "systemCheckError": "System check failed",
+    "stats": {
+      "mean": "Mean",
+      "variance": "Variance",
+      "entropy": "Entropy"
+    }
+  }
+}

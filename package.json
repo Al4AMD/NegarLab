@@ -1,0 +1,26 @@
+{
+  "name": "negarlab",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "packageManager": "pnpm@11.21.0",
+  "scripts": {
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm i18n:check",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test && node --test \"scripts/**/*.test.mjs\"",
+    "i18n:check": "node scripts/i18n-check.mjs",
+    "e2e": "pnpm --filter @negarlab/web e2e",
+    "gen:golden": "uv run --directory tools/golden python -m negarlab_golden generate",
+    "gen:demo": "uv run --directory tools/demo_images python generate.py",
+    "dev:web": "pnpm --filter @negarlab/web dev",
+    "dev:api": "uv run --directory apps/api uvicorn negarlab_api.main:app --reload",
+    "test:api": "uv run --directory apps/api pytest -q"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.8"
+  }
+}

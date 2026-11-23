@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changed areas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+      golden: ${{ steps.filter.outputs.golden }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/ip/**'
+              - 'scripts/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+              - 'biome.json'
+              - 'tsconfig*.json'
+              - '.github/workflows/ci.yml'
+            api:
+              - 'apps/api/**'
+              - '.github/workflows/ci.yml'
+            golden:
+              - 'tools/golden/**'
+              - 'packages/ip/test-data/**'
+              - '.github/workflows/ci.yml'
+            e2e:
+              - 'apps/web/**'
+              - 'apps/api/**'
+              - 'packages/ip/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+              - '.github/workflows/ci.yml'
+
+  web:
+    name: Web checks
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm --filter @negarlab/web build
+
+  api:
+    name: API checks
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --directory apps/api --locked
+      - run: uv run --directory apps/api ruff check .
+      - run: uv run --directory apps/api mypy src
+      - run: uv run --directory apps/api pytest -q
+        env:
+          NEGARLAB_RUN_ML_TESTS: "0"
+
+  golden:
+    name: Golden vectors
+    needs: changes
+    if: needs.changes.outputs.golden == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --directory tools/golden --locked
+      - run: uv run --directory tools/golden pytest -q
+
+  e2e:
+    name: Web e2e (phase PRs)
+    needs: changes
+    if: >-
+      needs.changes.outputs.e2e == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @negarlab/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @negarlab/web e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7

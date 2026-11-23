@@ -1,0 +1,21 @@
+[project]
+name = "negarlab-demo-images"
+version = "0.0.0"
+description = "Deterministic synthetic demo images for NegarLab"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=2.0",
+  "pillow>=11",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,57 @@
+{
+  "files": {
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.venv",
+      "!**/__pycache__",
+      "!**/.pytest_cache",
+      "!**/.mypy_cache",
+      "!**/.ruff_cache",
+      "!**/uv.lock",
+      "!**/playwright-report",
+      "!**/test-results",
+      "!packages/ip/test-data",
+      "!docs",
+      "!**/*.md",
+      "!opencode.json",
+      "!pnpm-lock.yaml"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/web/src/styles/globals.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    }
+  ]
+}
