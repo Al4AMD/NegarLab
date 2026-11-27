@@ -71,6 +71,25 @@ def assert_close(actual, expected):
         assert actual == expected
 
 
+def test_w4_vectors_are_deterministic(tmp_path):
+    from negarlab_golden.generate import W4_OUT, build_w4_vectors, write_w4_vectors
+
+    first = tmp_path / "a.json"
+    second = tmp_path / "b.json"
+    write_w4_vectors(first)
+    write_w4_vectors(second)
+    assert first.read_bytes() == second.read_bytes()
+    assert W4_OUT.exists(), "run pnpm gen:golden"
+    assert_close(json.loads(W4_OUT.read_text()), build_w4_vectors())
+    data = build_w4_vectors()
+    assert data["expected"]["color"]["width"] == 8
+    assert data["expected"]["morphology"]["width"] == 8
+    assert data["expected"]["geometry"]["width"] == 8
+    assert data["expected"]["noise"]["width"] == 8
+    assert data["expected"]["halftone"]["width"] == 8
+    assert data["expected"]["geometry"]["pyramidWidths"] == [8, 4, 2]
+
+
 def test_w3_vectors_are_deterministic(tmp_path):
     from negarlab_golden.generate import W3_OUT, build_w3_vectors, write_w3_vectors
 

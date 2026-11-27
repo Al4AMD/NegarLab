@@ -215,7 +215,7 @@ function blur5(image: RgbaImage): RgbaImage {
         let sum = 0;
         for (let k = 0; k < 5; k += 1) {
           const sourceY = clampIndex(y + k - 2, height);
-          sum += horizontal[(sourceY * width + x) * 3 + channel] ?? 0;
+          sum += (horizontal[(sourceY * width + x) * 3 + channel] ?? 0) * (taps[k] ?? 0);
         }
         data[offset + channel] = Math.round(sum / 16);
       }
