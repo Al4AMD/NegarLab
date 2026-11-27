@@ -1,9 +1,31 @@
 export { planesToRgba, rgbaToPlanes } from "./channels";
+export type {
+  ChromaMode,
+  ColorBlindness,
+  ColorSpace,
+  WhiteBalanceMethod,
+} from "./color";
+export {
+  balanceWhite,
+  colorSpaceView,
+  simulateColorBlindness,
+  subsampleChroma,
+} from "./color";
 export type { ClaheOptions } from "./clahe";
 export { clahe } from "./clahe";
 export { dct8, dctBasis, idct8, jpegQuantTable, ZIGZAG, zigzag } from "./dct";
 export { contrastStretch, equalize } from "./equalize";
 export { fft2, fftMagnitude, fftPhase, fftShift, ifft2 } from "./fft";
+export type { GeometryOptions, Interpolation } from "./geometry";
+export {
+  gaussianPyramid,
+  laplacianPyramid,
+  multiscaleBlend,
+  pyramidContactSheet,
+  transformImage,
+} from "./geometry";
+export type { HalftoneMethod, PaletteMethod, PaletteResult } from "./halftone";
+export { halftone, reducePalette } from "./halftone";
 export type { Kernel } from "./filters";
 export {
   bilateralFilter,
@@ -56,6 +78,21 @@ export {
   rleEncode,
 } from "./lossless";
 export { rgbaToLuma } from "./luma";
+export type { MorphologyOp, StructuringElement, StructuringShape } from "./morphology";
+export { applyMorphology, structuringElement } from "./morphology";
+export type {
+  DeconvolutionMethod,
+  DeconvolutionOptions,
+  NoiseKind,
+  NoiseOptions,
+} from "./noise";
+export {
+  addNoise,
+  deconvolve,
+  defocusBlur,
+  motionBlur,
+  wienerDenoise,
+} from "./noise";
 export type { MetricsResult, SsimResult } from "./metrics";
 export { compareMetrics, errorHeatmap, mse, msSsim, psnr, ssim } from "./metrics";
 export { gammaCorrect, logTransform, negative } from "./pointOps";
