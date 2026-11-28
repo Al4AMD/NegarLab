@@ -95,11 +95,21 @@ function rankFilter(
   return out;
 }
 
-function erodePlane(plane: Uint8ClampedArray, width: number, height: number, se: StructuringElement) {
+function erodePlane(
+  plane: Uint8ClampedArray,
+  width: number,
+  height: number,
+  se: StructuringElement,
+) {
   return rankFilter(plane, width, height, se, true);
 }
 
-function dilatePlane(plane: Uint8ClampedArray, width: number, height: number, se: StructuringElement) {
+function dilatePlane(
+  plane: Uint8ClampedArray,
+  width: number,
+  height: number,
+  se: StructuringElement,
+) {
   return rankFilter(plane, width, height, se, false);
 }
 
@@ -133,24 +143,15 @@ function runOp(
       );
     case "gradient":
       return planes.map((plane) =>
-        subtractPlane(
-          dilatePlane(plane, width, height, se),
-          erodePlane(plane, width, height, se),
-        ),
+        subtractPlane(dilatePlane(plane, width, height, se), erodePlane(plane, width, height, se)),
       );
     case "tophat":
       return planes.map((plane) =>
-        subtractPlane(
-          plane,
-          dilatePlane(erodePlane(plane, width, height, se), width, height, se),
-        ),
+        subtractPlane(plane, dilatePlane(erodePlane(plane, width, height, se), width, height, se)),
       );
     case "blackhat":
       return planes.map((plane) =>
-        subtractPlane(
-          erodePlane(dilatePlane(plane, width, height, se), width, height, se),
-          plane,
-        ),
+        subtractPlane(erodePlane(dilatePlane(plane, width, height, se), width, height, se), plane),
       );
   }
 }

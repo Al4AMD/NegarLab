@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  addNoise,
-  deconvolve,
-  defocusBlur,
-  motionBlur,
-  wienerDenoise,
-} from "../src/noise";
+import { addNoise, deconvolve, defocusBlur, motionBlur, wienerDenoise } from "../src/noise";
 import type { RgbaImage } from "../src/types";
 
 function flat(value = 128): RgbaImage {

@@ -165,10 +165,8 @@ export function transformImage(image: RgbaImage, options: GeometryOptions): Rgba
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const w = (inverse[6] ?? 0) * x + (inverse[7] ?? 0) * y + (inverse[8] ?? 0);
-      const sourceX =
-        ((inverse[0] ?? 0) * x + (inverse[1] ?? 0) * y + (inverse[2] ?? 0)) / w;
-      const sourceY =
-        ((inverse[3] ?? 0) * x + (inverse[4] ?? 0) * y + (inverse[5] ?? 0)) / w;
+      const sourceX = ((inverse[0] ?? 0) * x + (inverse[1] ?? 0) * y + (inverse[2] ?? 0)) / w;
+      const sourceY = ((inverse[3] ?? 0) * x + (inverse[4] ?? 0) * y + (inverse[5] ?? 0)) / w;
       const offset = (y * width + x) * 4;
       if (
         !Number.isFinite(sourceX) ||
@@ -231,7 +229,8 @@ function downsample(image: RgbaImage): RgbaImage {
   const data = new Uint8ClampedArray(width * height * 4);
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
-      const source = (Math.min(image.height - 1, y * 2) * image.width + Math.min(image.width - 1, x * 2)) * 4;
+      const source =
+        (Math.min(image.height - 1, y * 2) * image.width + Math.min(image.width - 1, x * 2)) * 4;
       const offset = (y * width + x) * 4;
       data[offset] = image.data[source] ?? 0;
       data[offset + 1] = image.data[source + 1] ?? 0;
@@ -299,8 +298,7 @@ export function laplacianPyramid(image: RgbaImage, levels: number): RgbaImage[] 
 export function pyramidContactSheet(levels: RgbaImage[]): RgbaImage {
   if (levels.length === 0) throw new RangeError("at least one level is required");
   const gap = 4;
-  const width =
-    levels.reduce((sum, level) => sum + level.width, 0) + gap * (levels.length - 1);
+  const width = levels.reduce((sum, level) => sum + level.width, 0) + gap * (levels.length - 1);
   const height = levels.reduce((max, level) => Math.max(max, level.height), 1);
   const data = new Uint8ClampedArray(width * height * 4);
   for (let i = 0; i < width * height; i += 1) {

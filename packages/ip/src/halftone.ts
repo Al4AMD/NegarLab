@@ -58,7 +58,8 @@ export function halftone(image: RgbaImage, method: HalftoneMethod, matrixSize = 
         values[index] = next;
         if (x + 1 < width) values[index + 1] = (values[index + 1] ?? 0) + (error * 7) / 16;
         if (y + 1 < height) {
-          if (x > 0) values[index + width - 1] = (values[index + width - 1] ?? 0) + (error * 3) / 16;
+          if (x > 0)
+            values[index + width - 1] = (values[index + width - 1] ?? 0) + (error * 3) / 16;
           values[index + width] = (values[index + width] ?? 0) + (error * 5) / 16;
           if (x + 1 < width) {
             values[index + width + 1] = (values[index + width + 1] ?? 0) + error / 16;
@@ -98,7 +99,11 @@ function samplePixels(image: RgbaImage): Array<[number, number, number]> {
   for (let y = 0; y < image.height; y += stride) {
     for (let x = 0; x < image.width; x += stride) {
       const offset = (y * image.width + x) * 4;
-      samples.push([image.data[offset] ?? 0, image.data[offset + 1] ?? 0, image.data[offset + 2] ?? 0]);
+      samples.push([
+        image.data[offset] ?? 0,
+        image.data[offset + 1] ?? 0,
+        image.data[offset + 2] ?? 0,
+      ]);
     }
   }
   return samples;
@@ -135,8 +140,7 @@ function medianCut(
     if (target < 0 || bestRange === 0) break;
     const box = boxes[target] as number[];
     box.sort(
-      (a, b) =>
-        (samples[a]?.[bestChannel] ?? 0) - (samples[b]?.[bestChannel] ?? 0) || a - b,
+      (a, b) => (samples[a]?.[bestChannel] ?? 0) - (samples[b]?.[bestChannel] ?? 0) || a - b,
     );
     const middle = Math.floor(box.length / 2);
     const left = box.slice(0, middle);
@@ -162,7 +166,12 @@ function medianCut(
   });
 }
 
-function nearest(palette: Array<[number, number, number]>, r: number, g: number, b: number): number {
+function nearest(
+  palette: Array<[number, number, number]>,
+  r: number,
+  g: number,
+  b: number,
+): number {
   let best = 0;
   let bestDistance = Number.POSITIVE_INFINITY;
   for (let index = 0; index < palette.length; index += 1) {
@@ -263,9 +272,14 @@ export function reducePalette(
   }
   for (let i = 0; i < width * height; i += 1) {
     const offset = i * 4;
-    const choice =
-      palette[nearest(palette, image.data[offset] ?? 0, image.data[offset + 1] ?? 0, image.data[offset + 2] ?? 0)] ??
-      [0, 0, 0];
+    const choice = palette[
+      nearest(
+        palette,
+        image.data[offset] ?? 0,
+        image.data[offset + 1] ?? 0,
+        image.data[offset + 2] ?? 0,
+      )
+    ] ?? [0, 0, 0];
     data[offset] = choice[0];
     data[offset + 1] = choice[1];
     data[offset + 2] = choice[2];

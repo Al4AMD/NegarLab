@@ -14,7 +14,9 @@ describe("halftone", () => {
   it("diffuses error and orders Bayer", () => {
     const floyd = halftone(image(), "floyd-steinberg");
     expect(floyd.data.length).toBe(8 * 8 * 4);
-    expect([...floyd.data].every((value, index) => index % 4 === 3 || value === 0 || value === 255)).toBe(true);
+    expect(
+      [...floyd.data].every((value, index) => index % 4 === 3 || value === 0 || value === 255),
+    ).toBe(true);
     const bayer = halftone(image(), "bayer", 4);
     expect(bayer.data.length).toBe(8 * 8 * 4);
   });

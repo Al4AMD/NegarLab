@@ -191,7 +191,13 @@ export interface WorkerApi {
   applyMorphology(image: RgbaImage, request: MorphologyRequest): RgbaImage;
   applyGeometry(image: RgbaImage, request: GeometryRequest): RgbaImage;
   applyNoise(image: RgbaImage, request: NoiseRequest): RgbaImage;
-  blur(image: RgbaImage, kind: "motion" | "defocus", length: number, angle: number, radius: number): RgbaImage;
+  blur(
+    image: RgbaImage,
+    kind: "motion" | "defocus",
+    length: number,
+    angle: number,
+    radius: number,
+  ): RgbaImage;
   restore(image: RgbaImage, request: RestoreRequest): RgbaImage;
   applyHalftone(image: RgbaImage, request: HalftoneRequest): RgbaImage | PaletteResult;
 }
@@ -325,7 +331,9 @@ const api: WorkerApi = {
     if (request.kind === "transform") return transformImage(image, request.options);
     if (request.kind === "pyramid") {
       return pyramidContactSheet(
-        request.laplacian ? laplacianPyramid(image, request.levels) : gaussianPyramid(image, request.levels),
+        request.laplacian
+          ? laplacianPyramid(image, request.levels)
+          : gaussianPyramid(image, request.levels),
       );
     }
     return multiscaleBlend(

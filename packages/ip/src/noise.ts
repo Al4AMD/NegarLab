@@ -93,7 +93,10 @@ export function addNoise(image: RgbaImage, options: NoiseOptions): RgbaImage {
 }
 
 function motionPsf(length: number, angle: number): Psf {
-  const size = Math.max(3, Math.round(length) % 2 === 0 ? Math.round(length) + 1 : Math.round(length));
+  const size = Math.max(
+    3,
+    Math.round(length) % 2 === 0 ? Math.round(length) + 1 : Math.round(length),
+  );
   const weights = new Float64Array(size * size);
   const half = Math.floor(size / 2);
   const radians = (angle * Math.PI) / 180;
@@ -234,7 +237,10 @@ export function deconvolve(image: RgbaImage, options: DeconvolutionOptions): Rgb
     throw new RangeError("strength must be non-negative");
   }
   const { width, height } = image;
-  const psf = options.blur === "motion" ? motionPsf(options.length, options.angle) : defocusPsf(options.radius);
+  const psf =
+    options.blur === "motion"
+      ? motionPsf(options.length, options.angle)
+      : defocusPsf(options.radius);
   const transfer = fft2(psfPlane(psf, width, height));
   const data = new Uint8ClampedArray(image.data.length);
   const epsilon = 1e-3;

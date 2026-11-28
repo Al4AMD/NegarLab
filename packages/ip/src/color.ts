@@ -20,9 +20,15 @@ interface Lab {
 const D65 = { x: 0.95047, y: 1, z: 1.08883 };
 
 const COLOR_BLIND_MATRICES: Record<ColorBlindness, number[]> = {
-  protanopia: [0.152286, 1.052583, -0.204868, 0.114503, 0.786281, 0.099216, -0.003882, -0.048116, 1.051998],
-  deuteranopia: [0.367322, 0.860646, -0.227968, 0.280085, 0.672501, 0.047413, -0.01182, 0.04294, 0.968881],
-  tritanopia: [1.255528, -0.076749, -0.178779, -0.078411, 0.930809, 0.147602, 0.004733, 0.691367, 0.3039],
+  protanopia: [
+    0.152286, 1.052583, -0.204868, 0.114503, 0.786281, 0.099216, -0.003882, -0.048116, 1.051998,
+  ],
+  deuteranopia: [
+    0.367322, 0.860646, -0.227968, 0.280085, 0.672501, 0.047413, -0.01182, 0.04294, 0.968881,
+  ],
+  tritanopia: [
+    1.255528, -0.076749, -0.178779, -0.078411, 0.930809, 0.147602, 0.004733, 0.691367, 0.3039,
+  ],
 };
 
 function clamp01(value: number): number {
@@ -217,12 +223,7 @@ function fromChannels(space: ColorSpace, channels: number[]): Rgb {
         (channels[2] ?? 0) * 255,
       );
     case "cmyk":
-      return cmykToRgb(
-        channels[0] ?? 0,
-        channels[1] ?? 0,
-        channels[2] ?? 0,
-        channels[3] ?? 0,
-      );
+      return cmykToRgb(channels[0] ?? 0, channels[1] ?? 0, channels[2] ?? 0, channels[3] ?? 0);
     case "lab":
       return labToRgb({
         l: (channels[0] ?? 0) * 100,
@@ -266,7 +267,10 @@ export function colorSpaceView(image: RgbaImage, space: ColorSpace, channel: num
     const channels = channelsFor(space, rgb);
     let out: Rgb;
     if (channel === -1) {
-      out = space === "gray" ? { r: channels[0] ?? 0, g: channels[0] ?? 0, b: channels[0] ?? 0 } : fromChannels(space, channels);
+      out =
+        space === "gray"
+          ? { r: channels[0] ?? 0, g: channels[0] ?? 0, b: channels[0] ?? 0 }
+          : fromChannels(space, channels);
     } else {
       const value = channelAt(space, channels, channel);
       out = { r: value, g: value, b: value };
@@ -348,9 +352,12 @@ export function simulateColorBlindness(
     const g = linearize((image.data[offset + 1] ?? 0) / 255);
     const b = linearize((image.data[offset + 2] ?? 0) / 255);
     const mixed = [
-      (1 - amount) * r + amount * ((matrix[0] ?? 1) * r + (matrix[1] ?? 0) * g + (matrix[2] ?? 0) * b),
-      (1 - amount) * g + amount * ((matrix[3] ?? 0) * r + (matrix[4] ?? 1) * g + (matrix[5] ?? 0) * b),
-      (1 - amount) * b + amount * ((matrix[6] ?? 0) * r + (matrix[7] ?? 0) * g + (matrix[8] ?? 1) * b),
+      (1 - amount) * r +
+        amount * ((matrix[0] ?? 1) * r + (matrix[1] ?? 0) * g + (matrix[2] ?? 0) * b),
+      (1 - amount) * g +
+        amount * ((matrix[3] ?? 0) * r + (matrix[4] ?? 1) * g + (matrix[5] ?? 0) * b),
+      (1 - amount) * b +
+        amount * ((matrix[6] ?? 0) * r + (matrix[7] ?? 0) * g + (matrix[8] ?? 1) * b),
     ];
     data[offset] = byte(delinearize(mixed[0] ?? 0));
     data[offset + 1] = byte(delinearize(mixed[1] ?? 0));

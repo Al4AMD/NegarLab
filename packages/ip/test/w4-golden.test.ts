@@ -5,7 +5,7 @@ import {
   simulateColorBlindness,
   subsampleChroma,
 } from "../src/color";
-import { transformImage, multiscaleBlend, gaussianPyramid } from "../src/geometry";
+import { gaussianPyramid, multiscaleBlend, transformImage } from "../src/geometry";
 import { halftone, reducePalette } from "../src/halftone";
 import { applyMorphology, structuringElement } from "../src/morphology";
 import { addNoise, wienerDenoise } from "../src/noise";
@@ -38,12 +38,8 @@ function rgba(values: ArrayLike<number>): number[] {
 describe("W4 golden vectors", () => {
   it("matches color views and corrections", () => {
     expect(rgba(colorSpaceView(input, "lab", 1).data)).toEqual(fixture.expected.color.labA);
-    expect(rgba(colorSpaceView(input, "hsv", 2).data)).toEqual(
-      fixture.expected.color.hsvChannel,
-    );
-    expect(rgba(subsampleChroma(input, "4:2:0").data)).toEqual(
-      fixture.expected.color.subsampled,
-    );
+    expect(rgba(colorSpaceView(input, "hsv", 2).data)).toEqual(fixture.expected.color.hsvChannel);
+    expect(rgba(subsampleChroma(input, "4:2:0").data)).toEqual(fixture.expected.color.subsampled);
     expect(rgba(simulateColorBlindness(input, "deuteranopia", 1).data)).toEqual(
       fixture.expected.color.colorblind,
     );
@@ -92,9 +88,7 @@ describe("W4 golden vectors", () => {
   });
 
   it("matches halftone and palettes", () => {
-    expect(rgba(halftone(input, "floyd-steinberg").data)).toEqual(
-      fixture.expected.halftone.floyd,
-    );
+    expect(rgba(halftone(input, "floyd-steinberg").data)).toEqual(fixture.expected.halftone.floyd);
     expect(rgba(halftone(input, "bayer", 4).data)).toEqual(fixture.expected.halftone.bayer);
     expect(rgba(reducePalette(input, 4, "median-cut", false, 1).image.data)).toEqual(
       fixture.expected.halftone.medianCut,
