@@ -102,6 +102,7 @@ export function HalftonePanel() {
               <button
                 key={option}
                 type="button"
+                data-testid={`halftone-${option === "floyd-steinberg" ? "floyd" : "bayer"}`}
                 aria-pressed={method === option}
                 onClick={() => setMethod(option)}
                 className={`rounded-sm border px-1 py-1 text-[9px] transition-colors ${

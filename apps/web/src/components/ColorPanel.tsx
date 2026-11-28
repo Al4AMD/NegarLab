@@ -155,6 +155,7 @@ export function ColorPanel() {
             <button
               key={option}
               type="button"
+              data-testid={`color-subsample-${option.replaceAll(":", "")}`}
               aria-pressed={chroma === option}
               onClick={() => setChroma(option)}
               className={`numeric rounded-sm border px-1.5 py-0.5 text-[10px] transition-colors ${
