@@ -3,11 +3,16 @@ import { useTranslation } from "react-i18next";
 import { useImageStore } from "../lib/imageStore";
 import { createIpWorker, type IpWorkerHandle } from "../lib/ipClient";
 import type { ImageAnalysis } from "../workers/ip.worker";
+import { ColorPanel } from "./ColorPanel";
 import { CompressionPanel } from "./CompressionPanel";
 import { FrequencyPanel } from "./FrequencyPanel";
+import { GeometryPanel } from "./GeometryPanel";
+import { HalftonePanel } from "./HalftonePanel";
 import { HistogramView } from "./HistogramView";
 import { Inspector } from "./Inspector";
 import { MetricsPanel } from "./MetricsPanel";
+import { MorphologyPanel } from "./MorphologyPanel";
+import { NoisePanel } from "./NoisePanel";
 import { PointOpsPanel } from "./PointOpsPanel";
 import { SamplingPanel } from "./SamplingPanel";
 import { SpatialPanel } from "./SpatialPanel";
@@ -23,6 +28,11 @@ const TABS = [
   "frequency",
   "compression",
   "metrics",
+  "color",
+  "morphology",
+  "geometry",
+  "halftone",
+  "noise",
 ] as const;
 type Tab = (typeof TABS)[number];
 
@@ -176,6 +186,11 @@ export function ParameterDock() {
       {tab === "frequency" && <FrequencyPanel />}
       {tab === "compression" && <CompressionPanel />}
       {tab === "metrics" && <MetricsPanel />}
+      {tab === "color" && <ColorPanel />}
+      {tab === "morphology" && <MorphologyPanel />}
+      {tab === "geometry" && <GeometryPanel />}
+      {tab === "halftone" && <HalftonePanel />}
+      {tab === "noise" && <NoisePanel />}
     </aside>
   );
 }

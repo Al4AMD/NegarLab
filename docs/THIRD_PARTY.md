@@ -29,6 +29,7 @@ Record direct dependencies and their licenses. Verify before adding; update this
 | pillow | HPND | Image decoding |
 | numpy | BSD-3-Clause | Numeric work, golden vectors |
 | python-multipart | Apache-2.0 | Uploads |
+| opencv-python-headless | Apache-2.0 | NLM denoise |
 | pytest, pytest-asyncio, httpx | MIT | API tests |
 | ruff | MIT | Python lint |
 | mypy | MIT | Python types |

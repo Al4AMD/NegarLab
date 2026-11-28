@@ -8,22 +8,30 @@ Living status log. Update after every task; keep claims verified.
 | W1 | I01 fundamentals, I03 histogram/point ops | Done |
 | W2 | I04 spatial filters, I05 frequency domain | Done |
 | W3 | I09 compression, I10 quality metrics | Done |
-| W4 | I02 color spaces, I06 restoration, I07 morphology | Next |
-| W5 | I08 geometric, I11 color reduction, I12 segmentation, I13 security | Planned |
+| W4 | I02 color spaces, I06 restoration, I07 morphology, I08 geometry, I11 color reduction/halftone | Done |
+| W5 | I12 segmentation, I13 security | Next |
 | W6 | I14 AI tools | Planned |
 | W7 | I15 education layer, I17 quality of life, polish and hardening | Planned |
 
 ## Next session
 
-**Start here:** W4 — I02 color spaces, I06 restoration, I07 morphology. W3 is complete on `dev`.
+**Start here:** W5 — I12 segmentation/features and I13 multimedia security. W4 is complete on `dev`.
 
 1. Pull, install, verify baseline: `git pull`, `pnpm install`, `pnpm check && pnpm test:api`.
-2. Read the spec sections for I02/I06/I07 (`docs/superpowers/specs/2026-11-23-negarlab-design.md` §5) and the W4 row above.
-3. Write `docs/superpowers/plans/YYYY-MM-DD-w4-color-restoration-morphology.md` before coding.
+2. Read the spec sections for I12/I13 (`docs/superpowers/specs/2026-11-23-negarlab-design.md` §5) and the W5 row above.
+3. Write the W5 plan before coding.
 4. Keep real codec subprocesses (JXL/HEIC/J2K) behind their own task; record encoders and licenses in `docs/THIRD_PARTY.md` before adding them.
 5. Environment notes: `gh` is not installed (use the GitHub REST API); host port 8080 is occupied, so verify Docker on `NEGARLAB_HTTP_PORT=8081`.
 
 ## Log
+
+### 2026-11-28 — W4
+
+- W4 plan committed (`docs/superpowers/plans/2026-11-28-w4-color-noise-morphology-geometry-halftone.md`); scope is the full spec set I02/I06/I07/I08/I11, wider than the earlier table row.
+- `@negarlab/ip`: color conversions/views, chroma subsampling, Machado colorblind simulation, gray-world/white-patch balance; morphology with custom SE masks and binary mode; inverse-mapped homography with four interpolation kernels, Gaussian/Laplacian pyramids, contact sheet, multiscale blend; seeded Gaussian/salt-pepper/speckle/Poisson noise, motion/defocus PSFs, local Wiener, FFT inverse/Wiener deconvolution; Floyd–Steinberg/Bayer halftone, median cut, sampled k-means, palette mapping and dithering; NumPy golden fixture `w4-color-noise-morphology-geometry-halftone.json`; 117 ip tests green.
+- API: synchronous OpenCV NLM endpoint `POST /api/v1/denoise` with strength 1..30, RGBA PNG in/out, alpha preserved, upload and pixel limits reused; 18 API tests green.
+- Web: worker RPC for all W4 operations; Color, Morphology, Geometry, Halftone, and Noise dock tabs with live previews, palette swatches, NLM busy state, bilingual theory; e2e exercises all five tabs with zero console errors.
+- Close-out: `pnpm check` (117 ip + 3 web tests, i18n 246 keys), API pytest (18), ruff/mypy, golden reproducibility, golden generator pytest (7), web build, Playwright e2e green. Docker build and runtime smoke green on `NEGARLAB_HTTP_PORT=8081` (health 200; NLM returned a 512×512 RGBA PNG; strength 99 returned 422).
 
 ### 2026-11-23 — W3
 

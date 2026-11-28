@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -759,6 +760,591 @@ def write_w3_vectors(path: Path) -> None:
     path.write_text(json.dumps(build_w3_vectors(), indent=2) + "\n", encoding="utf-8")
 
 
+W4_OUT = DEFAULT_OUT.with_name("w4-color-noise-morphology-geometry-halftone.json")
+
+
+def srgb_to_linear(value: np.ndarray) -> np.ndarray:
+    v = np.clip(value, 0.0, 1.0)
+    return np.where(v <= 0.04045, v / 12.92, ((v + 0.055) / 1.055) ** 2.4)
+
+
+def linear_to_srgb(value: np.ndarray) -> np.ndarray:
+    v = np.maximum(0.0, value)
+    return np.where(v <= 0.0031308, v * 12.92, 1.055 * v ** (1 / 2.4) - 0.055)
+
+
+def rgb_to_lab(rgba: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    rgb = rgba[..., :3].astype(np.float64) / 255.0
+    linear = srgb_to_linear(rgb)
+    xyz = np.stack(
+        [
+            0.4124564 * linear[..., 0] + 0.3575761 * linear[..., 1] + 0.1804375 * linear[..., 2],
+            0.2126729 * linear[..., 0] + 0.7151522 * linear[..., 1] + 0.072175 * linear[..., 2],
+            0.0193339 * linear[..., 0] + 0.119192 * linear[..., 1] + 0.9503041 * linear[..., 2],
+        ],
+        axis=-1,
+    )
+    xyz = xyz / np.array([0.95047, 1.0, 1.08883])
+    f = np.where(xyz > 0.008856, np.cbrt(xyz), 7.787 * xyz + 16 / 116)
+    lightness = 116 * f[..., 1] - 16
+    a = 500 * (f[..., 0] - f[..., 1])
+    b = 200 * (f[..., 1] - f[..., 2])
+    return lightness, a, b
+
+
+def rgba_from_planes(planes: list[np.ndarray], alpha: np.ndarray) -> np.ndarray:
+    return np.stack([*planes, alpha], axis=-1).astype(np.uint8)
+
+
+def lab_a_channel(rgba: np.ndarray) -> np.ndarray:
+    _, a, _ = rgb_to_lab(rgba)
+    value = byte((a + 128) / 255.0)
+    return rgba_from_planes([value, value, value], rgba[..., 3])
+
+
+def hsv_value_channel(rgba: np.ndarray) -> np.ndarray:
+    value = np.max(rgba[..., :3], axis=-1)
+    return rgba_from_planes([value, value, value], rgba[..., 3])
+
+
+def subsample_chroma(rgba: np.ndarray) -> np.ndarray:
+    rgb = rgba[..., :3].astype(np.float64) / 255.0
+    y = (0.299 * rgb[..., 0] + 0.587 * rgb[..., 1] + 0.114 * rgb[..., 2]).astype(np.float32)
+    cb = (128 - 0.168736 * rgb[..., 0] - 0.331264 * rgb[..., 1] + 0.5 * rgb[..., 2]).astype(
+        np.float32
+    )
+    cr = (128 + 0.5 * rgb[..., 0] - 0.418688 * rgb[..., 1] - 0.081312 * rgb[..., 2]).astype(
+        np.float32
+    )
+    height, width = rgba.shape[:2]
+    out_cb = cb.astype(np.float64)
+    out_cr = cr.astype(np.float64)
+    for by in range(0, height, 2):
+        for bx in range(0, width, 2):
+            block_cb = cb[by : by + 2, bx : bx + 2].astype(np.float64)
+            block_cr = cr[by : by + 2, bx : bx + 2].astype(np.float64)
+            out_cb[by : by + 2, bx : bx + 2] = np.float32(block_cb.mean())
+            out_cr[by : by + 2, bx : bx + 2] = np.float32(block_cr.mean())
+    yf = y.astype(np.float64)
+    blue = out_cb - 128
+    red = out_cr - 128
+    r = byte(yf + 1.402 * red)
+    g = byte(yf - 0.344136 * blue - 0.714136 * red)
+    b = byte(yf + 1.772 * blue)
+    return rgba_from_planes([r, g, b], rgba[..., 3])
+
+
+COLORBLIND_DEUTERANOPIA = np.array(
+    [
+        [0.367322, 0.860646, -0.227968],
+        [0.280085, 0.672501, 0.047413],
+        [-0.01182, 0.04294, 0.968881],
+    ]
+)
+
+
+def colorblind(rgba: np.ndarray) -> np.ndarray:
+    linear = srgb_to_linear(rgba[..., :3].astype(np.float64) / 255.0)
+    mixed = linear @ COLORBLIND_DEUTERANOPIA.T
+    rgb = byte(linear_to_srgb(mixed))
+    return rgba_from_planes([rgb[..., 0], rgb[..., 1], rgb[..., 2]], rgba[..., 3])
+
+
+def balance_white(rgba: np.ndarray) -> np.ndarray:
+    rgb = rgba[..., :3].astype(np.float64)
+    means = rgb.mean(axis=(0, 1))
+    average = float(means.mean())
+    gains = np.where(means > 0, average / np.where(means > 0, means, 1), 1.0)
+    out = byte((rgb / 255.0) * gains)
+    return rgba_from_planes([out[..., 0], out[..., 1], out[..., 2]], rgba[..., 3])
+
+
+def cross_mask(size: int) -> np.ndarray:
+    center = (size - 1) // 2
+    mask = np.zeros((size, size), dtype=bool)
+    mask[center, :] = True
+    mask[:, center] = True
+    return mask
+
+
+def morph_plane(plane: np.ndarray, mask: np.ndarray, take_min: bool) -> np.ndarray:
+    size = mask.shape[0]
+    half = size // 2
+    padded = np.pad(plane.astype(np.int64), ((half, half), (half, half)), mode="edge")
+    height, width = plane.shape
+    windows = np.stack(
+        [
+            padded[ky : ky + height, kx : kx + width]
+            for ky in range(size)
+            for kx in range(size)
+            if mask[ky, kx]
+        ],
+        axis=-1,
+    )
+    return windows.min(axis=-1) if take_min else windows.max(axis=-1)
+
+
+def morph_rgb(rgba: np.ndarray, op: str) -> np.ndarray:
+    mask = cross_mask(3)
+    planes = []
+    for channel_index in range(3):
+        plane = rgba[..., channel_index].astype(np.int64)
+        eroded = morph_plane(plane, mask, True)
+        if op == "erode":
+            planes.append(eroded)
+        elif op == "dilate":
+            planes.append(morph_plane(plane, mask, False))
+        elif op == "open":
+            planes.append(morph_plane(eroded, mask, False))
+        else:
+            raise ValueError(f"unknown morphology op {op}")
+    return rgba_from_planes([plane.astype(np.uint8) for plane in planes], rgba[..., 3])
+
+
+def bilinear_sample(image: np.ndarray, x: float, y: float) -> np.ndarray:
+    height, width = image.shape[:2]
+    x0 = int(np.floor(x))
+    y0 = int(np.floor(y))
+    fx = x - x0
+    fy = y - y0
+
+    def read(px: int, py: int) -> np.ndarray:
+        return image[min(height - 1, max(0, py)), min(width - 1, max(0, px))].astype(np.float64)
+
+    top = read(x0, y0) * (1 - fx) + read(x0 + 1, y0) * fx
+    bottom = read(x0, y0 + 1) * (1 - fx) + read(x0 + 1, y0 + 1) * fx
+    return top * (1 - fy) + bottom * fy
+
+
+def rotate_bilinear(rgba: np.ndarray, degrees: float) -> np.ndarray:
+    height, width = rgba.shape[:2]
+    cx = (width - 1) / 2
+    cy = (height - 1) / 2
+    angle = math.radians(degrees)
+    cos = math.cos(angle)
+    sin = math.sin(angle)
+    out = np.zeros_like(rgba)
+    for y in range(height):
+        for x in range(width):
+            dx = x - cx
+            dy = y - cy
+            source_x = cx + cos * dx + sin * dy
+            source_y = cy - sin * dx + cos * dy
+            if (
+                source_x < -0.5
+                or source_y < -0.5
+                or source_x > width - 0.5
+                or source_y > height - 0.5
+            ):
+                continue
+            sample = bilinear_sample(rgba, source_x, source_y)
+            out[y, x] = np.clip(np.floor(sample + 0.5), 0, 255).astype(np.uint8)
+    return out
+
+
+def blur5(rgba: np.ndarray) -> np.ndarray:
+    taps = [1, 4, 6, 4, 1]
+    height, width = rgba.shape[:2]
+    sums = np.zeros((height, width, 3), dtype=np.float64)
+    for k, tap in enumerate(taps):
+        xs = np.clip(np.arange(width) + k - 2, 0, width - 1)
+        sums += rgba[:, xs, :3].astype(np.float64) * tap
+    horizontal = (sums / 16).astype(np.float32).astype(np.float64)
+    out = rgba.copy()
+    vertical = np.zeros((height, width, 3), dtype=np.float64)
+    for k, tap in enumerate(taps):
+        ys = np.clip(np.arange(height) + k - 2, 0, height - 1)
+        vertical += horizontal[ys, :, :] * tap
+    out[..., :3] = np.clip(np.floor(vertical / 16 + 0.5), 0, 255).astype(np.uint8)
+    out[..., 3] = rgba[..., 3]
+    return out
+
+
+def downsample_nearest(rgba: np.ndarray) -> np.ndarray:
+    height, width = rgba.shape[:2]
+    out_height = max(1, height // 2)
+    out_width = max(1, width // 2)
+    ys = np.minimum(height - 1, np.arange(out_height) * 2)
+    xs = np.minimum(width - 1, np.arange(out_width) * 2)
+    return rgba[ys[:, None], xs[None, :]]
+
+
+def gaussian_pyramid(rgba: np.ndarray, levels: int) -> list[np.ndarray]:
+    pyramid = [rgba]
+    while len(pyramid) < levels:
+        last = pyramid[-1]
+        if last.shape[0] <= 1 and last.shape[1] <= 1:
+            break
+        pyramid.append(downsample_nearest(blur5(last)))
+    return pyramid
+
+
+def upsample_nearest(rgba: np.ndarray, width: int, height: int) -> np.ndarray:
+    source_height, source_width = rgba.shape[:2]
+    ys = np.minimum(source_height - 1, (np.arange(height) * source_height) // height)
+    xs = np.minimum(source_width - 1, (np.arange(width) * source_width) // width)
+    return rgba[ys[:, None], xs[None, :]]
+
+
+def laplacian_pyramid(rgba: np.ndarray, levels: int) -> list[np.ndarray]:
+    gaussian = gaussian_pyramid(rgba, levels)
+    pyramid = []
+    for index, current in enumerate(gaussian):
+        if index == len(gaussian) - 1:
+            pyramid.append(current)
+            continue
+        height, width = current.shape[:2]
+        upsampled = upsample_nearest(gaussian[index + 1], width, height)
+        residual = current.copy()
+        residual[..., :3] = np.clip(
+            np.floor(
+                128 + current[..., :3].astype(np.float64) - upsampled[..., :3].astype(np.float64) + 0.5
+            ),
+            0,
+            255,
+        ).astype(np.uint8)
+        pyramid.append(residual)
+    return pyramid
+
+
+def multiscale_blend(a: np.ndarray, b: np.ndarray, levels: int, mix: float) -> np.ndarray:
+    la = laplacian_pyramid(a, levels)
+    lb = laplacian_pyramid(b, levels)
+    blended = []
+    for left, right in zip(la, lb):
+        level = left.copy()
+        level[..., :3] = np.clip(
+            np.floor(
+                left[..., :3].astype(np.float64) * (1 - mix)
+                + right[..., :3].astype(np.float64) * mix
+                + 0.5
+            ),
+            0,
+            255,
+        ).astype(np.uint8)
+        blended.append(level)
+    current = blended[-1]
+    for level in range(len(blended) - 2, -1, -1):
+        residual = blended[level]
+        height, width = residual.shape[:2]
+        upsampled = upsample_nearest(current, width, height)
+        restored = residual.copy()
+        restored[..., :3] = np.clip(
+            np.floor(
+                residual[..., :3].astype(np.float64)
+                - 128
+                + upsampled[..., :3].astype(np.float64)
+                + 0.5
+            ),
+            0,
+            255,
+        ).astype(np.uint8)
+        current = restored
+    return current
+
+
+def mulberry32(seed: int):
+    state = seed & 0xFFFFFFFF
+
+    def next_value() -> float:
+        nonlocal state
+        state = (state + 0x6D2B79F5) & 0xFFFFFFFF
+        value = state
+        value = ((value ^ (value >> 15)) * (value | 1)) & 0xFFFFFFFF
+        mixed = (value + (((value ^ (value >> 7)) * (value | 61)) & 0xFFFFFFFF)) & 0xFFFFFFFF
+        value = (value ^ mixed) & 0xFFFFFFFF
+        return ((value ^ (value >> 14)) & 0xFFFFFFFF) / 4294967296.0
+
+    return next_value
+
+
+def gaussian_sample(random) -> float:
+    u1 = max(random(), 2.220446049250313e-16)
+    u2 = random()
+    return math.sqrt(-2 * math.log(u1)) * math.cos(2 * math.pi * u2)
+
+
+def noise_bytes(value: float) -> int:
+    return int(min(255, max(0, math.floor(value + 0.5))))
+
+
+def add_noise(rgba: np.ndarray, kind: str, amount: float, seed: int) -> np.ndarray:
+    random = mulberry32(seed)
+    out = rgba.copy()
+    height, width = rgba.shape[:2]
+    for y in range(height):
+        for x in range(width):
+            if kind == "salt-pepper":
+                sample = random()
+                if sample < amount / 2:
+                    out[y, x, :3] = 0
+                elif sample > 1 - amount / 2:
+                    out[y, x, :3] = 255
+                continue
+            for channel_index in range(3):
+                value = float(rgba[y, x, channel_index])
+                if kind == "gaussian":
+                    result = value + amount * 255 * gaussian_sample(random)
+                elif kind == "speckle":
+                    result = value * (1 + amount * gaussian_sample(random))
+                elif kind == "poisson":
+                    lam = (value / 255.0) * 20
+                    count = 0
+                    product = 1.0
+                    limit = math.exp(-lam)
+                    while True:
+                        count += 1
+                        product *= random()
+                        if product <= limit:
+                            break
+                    result = ((count - 1) / 20.0) * 255
+                else:
+                    raise ValueError(f"unknown noise kind {kind}")
+                out[y, x, channel_index] = noise_bytes(result)
+    return out
+
+
+def wiener_denoise(rgba: np.ndarray, strength: float) -> np.ndarray:
+    height, width = rgba.shape[:2]
+    noise_variance = (strength * 255) ** 2
+    out = rgba.copy()
+    for y in range(height):
+        for x in range(width):
+            for channel_index in range(3):
+                values = []
+                for dy in range(-2, 3):
+                    source_y = min(height - 1, max(0, y + dy))
+                    for dx in range(-2, 3):
+                        source_x = min(width - 1, max(0, x + dx))
+                        values.append(float(rgba[source_y, source_x, channel_index]))
+                mean = sum(values) / len(values)
+                variance = max(0.0, sum(v * v for v in values) / len(values) - mean * mean)
+                gain = max(0.0, variance - noise_variance) / variance if variance > 0 else 0.0
+                value = float(rgba[y, x, channel_index])
+                out[y, x, channel_index] = noise_bytes(mean + gain * (value - mean))
+    return out
+
+
+def bayer_matrix(size: int) -> np.ndarray:
+    if size == 1:
+        return np.zeros((1, 1), dtype=np.int64)
+    half = size // 2
+    previous = bayer_matrix(half)
+    matrix = np.zeros((size, size), dtype=np.int64)
+    matrix[:half, :half] = previous * 4
+    matrix[:half, half:] = previous * 4 + 2
+    matrix[half:, :half] = previous * 4 + 3
+    matrix[half:, half:] = previous * 4 + 1
+    return matrix
+
+
+def floyd_steinberg(rgba: np.ndarray) -> np.ndarray:
+    values = luma255(rgba).astype(np.float32)
+    height, width = rgba.shape[:2]
+    out = rgba.copy()
+    for y in range(height):
+        for x in range(width):
+            old = float(values[y, x])
+            next_value = 0.0 if old < 128 else 255.0
+            error = old - next_value
+            values[y, x] = np.float32(next_value)
+            if x + 1 < width:
+                values[y, x + 1] = np.float32(float(values[y, x + 1]) + error * 7 / 16)
+            if y + 1 < height:
+                if x > 0:
+                    values[y + 1, x - 1] = np.float32(float(values[y + 1, x - 1]) + error * 3 / 16)
+                values[y + 1, x] = np.float32(float(values[y + 1, x]) + error * 5 / 16)
+                if x + 1 < width:
+                    values[y + 1, x + 1] = np.float32(float(values[y + 1, x + 1]) + error / 16)
+    for y in range(height):
+        for x in range(width):
+            value = int(values[y, x])
+            out[y, x, :3] = value
+    return out
+
+
+def bayer_halftone(rgba: np.ndarray, size: int) -> np.ndarray:
+    values = luma255(rgba).astype(np.float32)
+    matrix = bayer_matrix(size)
+    scale = size * size
+    height, width = rgba.shape[:2]
+    out = rgba.copy()
+    for y in range(height):
+        for x in range(width):
+            threshold = ((matrix[y % size, x % size] + 0.5) / scale) * 255
+            value = 255 if float(values[y, x]) > threshold else 0
+            out[y, x, :3] = value
+    return out
+
+
+def sample_pixels(rgba: np.ndarray) -> list[tuple[int, int, int]]:
+    total = rgba.shape[0] * rgba.shape[1]
+    stride = max(1, int(math.floor(math.sqrt(total / 20000))))
+    samples = []
+    for y in range(0, rgba.shape[0], stride):
+        for x in range(0, rgba.shape[1], stride):
+            samples.append(
+                (int(rgba[y, x, 0]), int(rgba[y, x, 1]), int(rgba[y, x, 2]))
+            )
+    return samples
+
+
+def median_cut(samples: list[tuple[int, int, int]], colors: int) -> list[tuple[int, int, int]]:
+    boxes: list[list[int]] = [list(range(len(samples)))]
+    while len(boxes) < colors:
+        target = -1
+        best_range = 0
+        best_channel = 0
+        for box_index, box in enumerate(boxes):
+            if len(box) < 2:
+                continue
+            for channel in range(3):
+                values = [samples[index][channel] for index in box]
+                value_range = max(values) - min(values)
+                if value_range > best_range:
+                    best_range = value_range
+                    target = box_index
+                    best_channel = channel
+        if target < 0 or best_range == 0:
+            break
+        box = boxes[target]
+        box.sort(key=lambda index: (samples[index][best_channel], index))
+        middle = len(box) // 2
+        left = box[:middle]
+        right = box[middle:]
+        boxes = boxes[:target] + [left, right] + boxes[target + 1 :]
+    palette = []
+    for box in boxes:
+        count = max(1, len(box))
+        sums = [0, 0, 0]
+        for index in box:
+            sample = samples[index]
+            sums[0] += sample[0]
+            sums[1] += sample[1]
+            sums[2] += sample[2]
+        palette.append(
+            tuple(int(math.floor(sums[channel] / count + 0.5)) for channel in range(3))
+        )
+    return palette
+
+
+def nearest_color(palette: list[tuple[float, float, float]], r: float, g: float, b: float) -> int:
+    best = 0
+    best_distance = float("inf")
+    for index, color in enumerate(palette):
+        distance = (r - color[0]) ** 2 + (g - color[1]) ** 2 + (b - color[2]) ** 2
+        if distance < best_distance:
+            best_distance = distance
+            best = index
+    return best
+
+
+def kmeans_palette(
+    samples: list[tuple[int, int, int]], colors: int
+) -> list[tuple[int, int, int]]:
+    centroids = [tuple(float(value) for value in color) for color in median_cut(samples, colors)]
+    if not centroids:
+        return []
+    for _ in range(12):
+        sums = [[0.0, 0.0, 0.0] for _ in centroids]
+        counts = [0 for _ in centroids]
+        for sample in samples:
+            index = nearest_color(centroids, *sample)
+            sums[index][0] += sample[0]
+            sums[index][1] += sample[1]
+            sums[index][2] += sample[2]
+            counts[index] += 1
+        updated = []
+        for index, centroid in enumerate(centroids):
+            if counts[index] == 0:
+                updated.append(centroid)
+            else:
+                updated.append(
+                    tuple(sums[index][channel] / counts[index] for channel in range(3))
+                )
+        centroids = updated
+    return [
+        tuple(int(math.floor(value + 0.5)) for value in centroid) for centroid in centroids
+    ]
+
+
+def map_palette(rgba: np.ndarray, palette: list[tuple[int, int, int]]) -> np.ndarray:
+    height, width = rgba.shape[:2]
+    out = rgba.copy()
+    for y in range(height):
+        for x in range(width):
+            index = nearest_color(
+                palette,
+                int(rgba[y, x, 0]),
+                int(rgba[y, x, 1]),
+                int(rgba[y, x, 2]),
+            )
+            out[y, x, :3] = palette[index]
+    return out
+
+
+def build_w4_vectors() -> dict:
+    rgba = pattern_rgba()
+    return {
+        "input": {"width": SIZE, "height": SIZE, "rgba": rgba.reshape(-1).tolist()},
+        "expected": {
+            "color": {
+                "width": SIZE,
+                "height": SIZE,
+                "labA": lab_a_channel(rgba).reshape(-1).tolist(),
+                "hsvChannel": hsv_value_channel(rgba).reshape(-1).tolist(),
+                "subsampled": subsample_chroma(rgba).reshape(-1).tolist(),
+                "colorblind": colorblind(rgba).reshape(-1).tolist(),
+                "whiteBalance": balance_white(rgba).reshape(-1).tolist(),
+            },
+            "morphology": {
+                "width": SIZE,
+                "height": SIZE,
+                "eroded": morph_rgb(rgba, "erode").reshape(-1).tolist(),
+                "dilated": morph_rgb(rgba, "dilate").reshape(-1).tolist(),
+                "opened": morph_rgb(rgba, "open").reshape(-1).tolist(),
+            },
+            "geometry": {
+                "width": SIZE,
+                "height": SIZE,
+                "rotated": rotate_bilinear(rgba, 30).reshape(-1).tolist(),
+                "pyramidWidths": [
+                    level.shape[1] for level in gaussian_pyramid(rgba, 3)
+                ],
+                "blended": multiscale_blend(rgba, rgba, 3, 0.5).reshape(-1).tolist(),
+            },
+            "noise": {
+                "width": SIZE,
+                "height": SIZE,
+                "gaussian": add_noise(rgba, "gaussian", 0.1, 7).reshape(-1).tolist(),
+                "saltPepper": add_noise(rgba, "salt-pepper", 0.1, 3).reshape(-1).tolist(),
+                "speckle": add_noise(rgba, "speckle", 0.05, 5).reshape(-1).tolist(),
+                "poisson": add_noise(rgba, "poisson", 0.2, 11).reshape(-1).tolist(),
+                "wiener": wiener_denoise(rgba, 0.02).reshape(-1).tolist(),
+            },
+            "halftone": {
+                "width": SIZE,
+                "height": SIZE,
+                "floyd": floyd_steinberg(rgba).reshape(-1).tolist(),
+                "bayer": bayer_halftone(rgba, 4).reshape(-1).tolist(),
+                "medianCut": map_palette(rgba, median_cut(sample_pixels(rgba), 4))
+                .reshape(-1)
+                .tolist(),
+                "kmeans": map_palette(rgba, kmeans_palette(sample_pixels(rgba), 4))
+                .reshape(-1)
+                .tolist(),
+            },
+        },
+        "tolerance": TOLERANCE,
+        "source": "tools/golden/negarlab_golden/generate.py (numpy float64; byte-exact integer outputs)",
+    }
+
+
+def write_w4_vectors(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(build_w4_vectors(), indent=2) + "\n", encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m negarlab_golden")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -771,6 +1357,7 @@ def main(argv: list[str] | None = None) -> int:
         write_w1_vectors(W1_OUT)
         write_w2_vectors(W2_OUT)
         write_w3_vectors(W3_OUT)
-        print(f"wrote {args.out}, {W1_OUT}, {W2_OUT}, and {W3_OUT}")
+        write_w4_vectors(W4_OUT)
+        print(f"wrote {args.out}, {W1_OUT}, {W2_OUT}, {W3_OUT}, and {W4_OUT}")
         return 0
     return 1

@@ -76,6 +76,32 @@ test("bilingual shell, theme toggle, and worker system check", async ({ page }) 
   await page.getByTestId("metrics-rd").click();
   await expect(page.getByTestId("rd-chart")).toBeVisible();
 
+  await page.getByTestId("tab-color").click();
+  await page.getByTestId("color-subsample").click();
+  await page.getByTestId("color-subsample-420").click();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("color-reset").click();
+
+  await page.getByTestId("tab-morphology").click();
+  await page.getByTestId("morphology-erode").click();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("morphology-reset").click();
+
+  await page.getByTestId("tab-geometry").click();
+  await page.getByTestId("geometry-transform").click();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("geometry-reset").click();
+
+  await page.getByTestId("tab-halftone").click();
+  await page.getByTestId("halftone-floyd").click();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("halftone-reset").click();
+
+  await page.getByTestId("tab-noise").click();
+  await page.getByTestId("noise-gaussian").click();
+  await expect(page.getByTestId("stage-preview")).toBeVisible();
+  await page.getByTestId("noise-reset").click();
+
   await page.getByRole("button", { name: "System check" }).click();
   const readout = page.getByTestId("stats-readout");
   await expect(readout).toBeVisible();
