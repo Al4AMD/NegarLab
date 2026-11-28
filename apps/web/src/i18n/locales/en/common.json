@@ -111,7 +111,9 @@
       "spatial": "Filters",
       "frequency": "Frequency",
       "compression": "Compress",
-      "metrics": "Metrics"
+      "metrics": "Metrics",
+      "color": "Color",
+      "morphology": "Morphology"
     },
     "reset": "Reset preview",
     "point": {
@@ -216,6 +218,58 @@
       "computeRd": "Compute rate-distortion",
       "quality": "JPEG quality",
       "ssimMap": "SSIM map"
+    },
+    "color": {
+      "modes": {
+        "space": "Spaces",
+        "subsample": "Subsampling",
+        "colorblind": "Color vision",
+        "balance": "White balance"
+      },
+      "space": "Space",
+      "spaces": {
+        "rgb": "RGB",
+        "hsv": "HSV",
+        "hsl": "HSL",
+        "ycbcr": "YCbCr",
+        "cmyk": "CMYK",
+        "lab": "Lab",
+        "gray": "Gray"
+      },
+      "all": "All",
+      "deficiency": "Deficiency",
+      "deficiencies": {
+        "protanopia": "Protanopia",
+        "deuteranopia": "Deuteranopia",
+        "tritanopia": "Tritanopia"
+      },
+      "severity": "Severity",
+      "methods": {
+        "grayWorld": "Gray world",
+        "whitePatch": "White patch"
+      }
+    },
+    "morphology": {
+      "ops": {
+        "erode": "Erode",
+        "dilate": "Dilate",
+        "open": "Open",
+        "close": "Close",
+        "gradient": "Gradient",
+        "tophat": "Top-hat",
+        "blackhat": "Black-hat"
+      },
+      "shape": "Shape",
+      "shapes": {
+        "rect": "Rectangle",
+        "ellipse": "Ellipse",
+        "cross": "Cross"
+      },
+      "size": "Size",
+      "mask": "Structuring element",
+      "cell": "Element cell {{index}}",
+      "binary": "Binary",
+      "threshold": "Threshold"
     }
   },
   "transport": {
@@ -237,6 +291,8 @@
     "spatial": "A spatial filter replaces each pixel with a weighted sum of its neighborhood. Smoothing kernels average noise; sharpen and unsharp add high-frequency detail; median rejects outliers; gradient operators estimate edges.",
     "frequency": "The 2D Fourier transform maps an image to spatial frequencies. Lowpass filters keep smooth structure, highpass keeps edges, bandpass keeps oriented texture, and notch filters suppress specific periodic noise.",
     "compression": "JPEG splits the image into 8×8 blocks, subtracts 128, applies the DCT, divides each coefficient by a quality-scaled quantization step, and rounds. Most high-frequency coefficients become zero. The decoder dequantizes, applies the inverse DCT, and clips back to bytes. The entropy size is an estimate and excludes headers.",
-    "metrics": "MSE averages squared RGB error. PSNR converts it to a logarithmic decibel scale. SSIM compares local mean, variance, and covariance in a Gaussian window, so it tracks perceived structure; MS-SSIM repeats this over five scales."
+    "metrics": "MSE averages squared RGB error. PSNR converts it to a logarithmic decibel scale. SSIM compares local mean, variance, and covariance in a Gaussian window, so it tracks perceived structure; MS-SSIM repeats this over five scales.",
+    "color": "Color spaces reorganize the same RGB data into components that separate brightness from chroma or model perception. Lab is approximately perceptually uniform, HSV separates hue and saturation, YCbCr enables chroma subsampling, and white balance scales channels so neutral areas become gray.",
+    "morphology": "Morphology probes the image with a structuring element. Erosion keeps pixels whose whole neighborhood fits the element; dilation expands bright regions. Opening removes small bright details, closing fills small dark gaps, and top-hat or black-hat expose details smaller than the element."
   }
 }

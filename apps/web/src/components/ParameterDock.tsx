@@ -3,11 +3,13 @@ import { useTranslation } from "react-i18next";
 import { useImageStore } from "../lib/imageStore";
 import { createIpWorker, type IpWorkerHandle } from "../lib/ipClient";
 import type { ImageAnalysis } from "../workers/ip.worker";
+import { ColorPanel } from "./ColorPanel";
 import { CompressionPanel } from "./CompressionPanel";
 import { FrequencyPanel } from "./FrequencyPanel";
 import { HistogramView } from "./HistogramView";
 import { Inspector } from "./Inspector";
 import { MetricsPanel } from "./MetricsPanel";
+import { MorphologyPanel } from "./MorphologyPanel";
 import { PointOpsPanel } from "./PointOpsPanel";
 import { SamplingPanel } from "./SamplingPanel";
 import { SpatialPanel } from "./SpatialPanel";
@@ -23,6 +25,8 @@ const TABS = [
   "frequency",
   "compression",
   "metrics",
+  "color",
+  "morphology",
 ] as const;
 type Tab = (typeof TABS)[number];
 
@@ -176,6 +180,8 @@ export function ParameterDock() {
       {tab === "frequency" && <FrequencyPanel />}
       {tab === "compression" && <CompressionPanel />}
       {tab === "metrics" && <MetricsPanel />}
+      {tab === "color" && <ColorPanel />}
+      {tab === "morphology" && <MorphologyPanel />}
     </aside>
   );
 }
