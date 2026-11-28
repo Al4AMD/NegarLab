@@ -10,6 +10,7 @@ dependencies = [
   "numpy>=2.0",
   "pydantic-settings>=2.7",
   "python-multipart>=0.0.20",
+  "opencv-python-headless>=4.10",
 ]
 
 [dependency-groups]
@@ -33,6 +34,10 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/negarlab_api/api/routes/*.py" = ["B008"]
+
+[[tool.mypy.overrides]]
+module = ["cv2"]
+ignore_missing_imports = true
 
 [tool.mypy]
 python_version = "3.11"

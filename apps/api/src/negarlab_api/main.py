@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRouter
 
+from .api.routes.denoise import router as denoise_router
 from .api.routes.health import router as health_router
 from .api.routes.images import router as images_router
 from .api.routes.jobs import router as jobs_router
@@ -60,6 +61,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api = APIRouter(prefix="/api/v1")
     api.include_router(health_router)
     api.include_router(images_router)
+    api.include_router(denoise_router)
     api.include_router(jobs_router)
     app.include_router(api)
     return app
