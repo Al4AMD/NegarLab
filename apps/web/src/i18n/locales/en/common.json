@@ -113,7 +113,9 @@
       "compression": "Compress",
       "metrics": "Metrics",
       "color": "Color",
-      "morphology": "Morphology"
+      "morphology": "Morphology",
+      "geometry": "Geometry",
+      "halftone": "Halftone"
     },
     "reset": "Reset preview",
     "point": {
@@ -270,6 +272,41 @@
       "cell": "Element cell {{index}}",
       "binary": "Binary",
       "threshold": "Threshold"
+    },
+    "geometry": {
+      "modes": {
+        "transform": "Transform",
+        "pyramid": "Pyramids",
+        "blend": "Blend"
+      },
+      "interpolation": "Interpolation",
+      "interpolations": {
+        "nearest": "Nearest",
+        "bilinear": "Bilinear",
+        "bicubic": "Bicubic",
+        "lanczos": "Lanczos"
+      },
+      "rotate": "Rotate",
+      "levels": "Levels",
+      "laplacian": "Laplacian",
+      "mix": "Mix"
+    },
+    "halftone": {
+      "modes": {
+        "halftone": "Halftone",
+        "palette": "Palette"
+      },
+      "methods": {
+        "floyd": "Floyd–Steinberg",
+        "bayer": "Bayer"
+      },
+      "colors": "Colors",
+      "paletteMethods": {
+        "medianCut": "Median cut",
+        "kmeans": "k-means"
+      },
+      "dither": "Dither",
+      "seed": "Seed"
     }
   },
   "transport": {
@@ -293,6 +330,8 @@
     "compression": "JPEG splits the image into 8×8 blocks, subtracts 128, applies the DCT, divides each coefficient by a quality-scaled quantization step, and rounds. Most high-frequency coefficients become zero. The decoder dequantizes, applies the inverse DCT, and clips back to bytes. The entropy size is an estimate and excludes headers.",
     "metrics": "MSE averages squared RGB error. PSNR converts it to a logarithmic decibel scale. SSIM compares local mean, variance, and covariance in a Gaussian window, so it tracks perceived structure; MS-SSIM repeats this over five scales.",
     "color": "Color spaces reorganize the same RGB data into components that separate brightness from chroma or model perception. Lab is approximately perceptually uniform, HSV separates hue and saturation, YCbCr enables chroma subsampling, and white balance scales channels so neutral areas become gray.",
-    "morphology": "Morphology probes the image with a structuring element. Erosion keeps pixels whose whole neighborhood fits the element; dilation expands bright regions. Opening removes small bright details, closing fills small dark gaps, and top-hat or black-hat expose details smaller than the element."
+    "morphology": "Morphology probes the image with a structuring element. Erosion keeps pixels whose whole neighborhood fits the element; dilation expands bright regions. Opening removes small bright details, closing fills small dark gaps, and top-hat or black-hat expose details smaller than the element.",
+    "geometry": "Geometric transforms map output pixels back through the inverse homography H to sample the source. Interpolation chooses how fractional coordinates combine neighbors: nearest is fast and blocky, bilinear smooth, bicubic and Lanczos sharper. A Gaussian pyramid repeatedly blurs and downsamples; a Laplacian pyramid stores the residual lost at each level, so multiscale blending can mix coarse and fine structure separately.",
+    "halftone": "Halftoning trades spatial resolution for tonal resolution. Floyd–Steinberg diffuses each quantization error to future neighbors; ordered dithering compares the image to a Bayer threshold matrix. Palette reduction groups colors: median cut splits the color box with the widest range, while k-means iteratively moves centroids to the mean of their assigned pixels."
   }
 }

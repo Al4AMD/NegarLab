@@ -6,6 +6,8 @@ import type { ImageAnalysis } from "../workers/ip.worker";
 import { ColorPanel } from "./ColorPanel";
 import { CompressionPanel } from "./CompressionPanel";
 import { FrequencyPanel } from "./FrequencyPanel";
+import { GeometryPanel } from "./GeometryPanel";
+import { HalftonePanel } from "./HalftonePanel";
 import { HistogramView } from "./HistogramView";
 import { Inspector } from "./Inspector";
 import { MetricsPanel } from "./MetricsPanel";
@@ -27,6 +29,8 @@ const TABS = [
   "metrics",
   "color",
   "morphology",
+  "geometry",
+  "halftone",
 ] as const;
 type Tab = (typeof TABS)[number];
 
@@ -182,6 +186,8 @@ export function ParameterDock() {
       {tab === "metrics" && <MetricsPanel />}
       {tab === "color" && <ColorPanel />}
       {tab === "morphology" && <MorphologyPanel />}
+      {tab === "geometry" && <GeometryPanel />}
+      {tab === "halftone" && <HalftonePanel />}
     </aside>
   );
 }

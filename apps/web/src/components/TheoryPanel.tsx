@@ -11,7 +11,9 @@ export type TheoryTopic =
   | "compression"
   | "metrics"
   | "color"
-  | "morphology";
+  | "morphology"
+  | "geometry"
+  | "halftone";
 
 const FORMULAS: Record<TheoryTopic, string> = {
   inspect:
@@ -28,6 +30,9 @@ const FORMULAS: Record<TheoryTopic, string> = {
   color: "Y=0.299R+0.587G+0.114B,\\quad L=116f(Y)-16",
   morphology:
     "A\\ominus B=\\{z\\mid B_z\\subseteq A\\},\\quad A\\oplus B=\\{z\\mid \\hat B_z\\cap A\\neq\\varnothing\\}",
+  geometry:
+    "\\begin{bmatrix}x'\\\\y'\\\\1\\end{bmatrix}=H\\begin{bmatrix}x\\\\y\\\\1\\end{bmatrix}",
+  halftone: "e(x,y)=f(x,y)-b(x,y),\\quad b=\\begin{cases}255&f\\ge T\\\\0&f<T\\end{cases}",
   metrics:
     "\\mathrm{MSE}=\\tfrac{1}{3N}\\sum_i\\sum_c (x_{i,c}-y_{i,c})^2,\\quad \\mathrm{PSNR}=10\\log_{10}\\frac{255^2}{\\mathrm{MSE}},\\quad \\mathrm{SSIM}=\\frac{(2\\mu_x\\mu_y+C_1)(2\\sigma_{xy}+C_2)}{(\\mu_x^2+\\mu_y^2+C_1)(\\sigma_x^2+\\sigma_y^2+C_2)}",
 };
