@@ -1175,4 +1175,4 @@ git commit -m "docs: close out wave 4"
 - `wienerDenoise` is a 5×5 local mean/variance filter, not an FFT Wiener filter; the FFT path is used only by inverse/Wiener deconvolution.
 - Poisson noise ignores the amount slider and uses `lambda = value/255*20`.
 - Geometry writes alpha 0 outside the source bounds and resamples all four channels inside.
-- Verification: `pnpm check` (117 ip + 3 web tests, 246 i18n keys), `pnpm test:api` (18), ruff, mypy, golden pytest (7), golden reproducibility, web build, and Playwright e2e green. Docker build was skipped because the Docker daemon was not running.
+- Verification: `pnpm check` (117 ip + 3 web tests, 246 i18n keys), `pnpm test:api` (18), ruff, mypy, golden pytest (7), golden reproducibility, web build, and Playwright e2e green. Docker build and runtime smoke passed on `NEGARLAB_HTTP_PORT=8081` (health 200; NLM 512×512 RGBA PNG; bad strength 422).

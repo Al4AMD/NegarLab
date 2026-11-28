@@ -31,7 +31,7 @@ Living status log. Update after every task; keep claims verified.
 - `@negarlab/ip`: color conversions/views, chroma subsampling, Machado colorblind simulation, gray-world/white-patch balance; morphology with custom SE masks and binary mode; inverse-mapped homography with four interpolation kernels, Gaussian/Laplacian pyramids, contact sheet, multiscale blend; seeded Gaussian/salt-pepper/speckle/Poisson noise, motion/defocus PSFs, local Wiener, FFT inverse/Wiener deconvolution; Floyd–Steinberg/Bayer halftone, median cut, sampled k-means, palette mapping and dithering; NumPy golden fixture `w4-color-noise-morphology-geometry-halftone.json`; 117 ip tests green.
 - API: synchronous OpenCV NLM endpoint `POST /api/v1/denoise` with strength 1..30, RGBA PNG in/out, alpha preserved, upload and pixel limits reused; 18 API tests green.
 - Web: worker RPC for all W4 operations; Color, Morphology, Geometry, Halftone, and Noise dock tabs with live previews, palette swatches, NLM busy state, bilingual theory; e2e exercises all five tabs with zero console errors.
-- Close-out: `pnpm check` (117 ip + 3 web tests, i18n 246 keys), API pytest (18), ruff/mypy, golden reproducibility, golden generator pytest (7), web build, Playwright e2e green. Docker build skipped: Docker daemon was not running on the verification host.
+- Close-out: `pnpm check` (117 ip + 3 web tests, i18n 246 keys), API pytest (18), ruff/mypy, golden reproducibility, golden generator pytest (7), web build, Playwright e2e green. Docker build and runtime smoke green on `NEGARLAB_HTTP_PORT=8081` (health 200; NLM returned a 512×512 RGBA PNG; strength 99 returned 422).
 
 ### 2026-11-23 — W3
 
