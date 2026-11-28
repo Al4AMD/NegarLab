@@ -49,3 +49,13 @@ The W3 JPEG lab converts to BT.601 YCbCr at full resolution (4:4:4), pads partia
 ## D12 — LZW uses fixed 16-bit codes
 
 The lossless comparison LZW encoder emits 16-bit big-endian codes, starts at 256, and never emits a clear code. Rationale: simple deterministic teaching implementation with a bounded dictionary. Consequence: compressed size is worse than GIF/TIFF LZW on long inputs; replace only if a real LZW codec is required.
+
+## D13 — NLM runs synchronously on the backend; k-means samples pixels
+
+`POST /api/v1/denoise` accepts multipart RGBA PNG plus `strength` in 1..30, runs OpenCV `fastNlMeansDenoisingColored`, preserves alpha, and returns PNG in the same request. It does not use the job registry or SSE progress. Rationale: full-image NLM is too slow in JavaScript, and a single short request keeps the UI simple; the existing 25 MiB, 64 MP, and 2048 px limits bound the work. Consequence: the request blocks until OpenCV finishes and the panel shows a busy state; move it to a job only if large images or cancellation become requirements.
+
+The TS k-means palette starts from median-cut centroids, runs 12 Lloyd iterations, and samples at most 20,000 pixels with an integer stride. The seed parameter is accepted for API symmetry but is unused because initialization is deterministic. Rationale: bounded CPU time and reproducible golden vectors. Consequence: palettes on very large images come from a subsample; increase the cap only if palette fidelity becomes a teaching issue.
+
+## D14 — Color-vision simulation uses Machado matrices
+
+Colorblind simulation applies the Machado 2009 protanopia, deuteranopia, and tritanopia matrices in linear sRGB and interpolates toward the identity by severity. Rationale: small, deterministic, and close enough for demonstration. Consequence: it is not a full spectral or physiological model, so severity values are illustrative rather than clinical.
