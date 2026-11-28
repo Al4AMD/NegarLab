@@ -13,7 +13,8 @@ export type TheoryTopic =
   | "color"
   | "morphology"
   | "geometry"
-  | "halftone";
+  | "halftone"
+  | "noise";
 
 const FORMULAS: Record<TheoryTopic, string> = {
   inspect:
@@ -33,6 +34,8 @@ const FORMULAS: Record<TheoryTopic, string> = {
   geometry:
     "\\begin{bmatrix}x'\\\\y'\\\\1\\end{bmatrix}=H\\begin{bmatrix}x\\\\y\\\\1\\end{bmatrix}",
   halftone: "e(x,y)=f(x,y)-b(x,y),\\quad b=\\begin{cases}255&f\\ge T\\\\0&f<T\\end{cases}",
+  noise:
+    "g(x,y)=f(x,y)+\\eta(x,y),\\quad \\hat f=\\frac{\\sigma^2-\\sigma_n^2}{\\sigma^2}\\,(g-\\mu)+\\mu",
   metrics:
     "\\mathrm{MSE}=\\tfrac{1}{3N}\\sum_i\\sum_c (x_{i,c}-y_{i,c})^2,\\quad \\mathrm{PSNR}=10\\log_{10}\\frac{255^2}{\\mathrm{MSE}},\\quad \\mathrm{SSIM}=\\frac{(2\\mu_x\\mu_y+C_1)(2\\sigma_{xy}+C_2)}{(\\mu_x^2+\\mu_y^2+C_1)(\\sigma_x^2+\\sigma_y^2+C_2)}",
 };

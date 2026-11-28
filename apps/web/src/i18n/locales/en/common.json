@@ -115,7 +115,8 @@
       "color": "Color",
       "morphology": "Morphology",
       "geometry": "Geometry",
-      "halftone": "Halftone"
+      "halftone": "Halftone",
+      "noise": "Noise"
     },
     "reset": "Reset preview",
     "point": {
@@ -307,6 +308,45 @@
       },
       "dither": "Dither",
       "seed": "Seed"
+    },
+    "noise": {
+      "kinds": {
+        "none": "None",
+        "gaussian": "Gaussian",
+        "saltPepper": "Salt & pepper",
+        "speckle": "Speckle",
+        "poisson": "Poisson"
+      },
+      "amount": "Amount",
+      "seed": "Seed",
+      "reroll": "Reroll",
+      "blurs": {
+        "none": "No blur",
+        "motion": "Motion",
+        "defocus": "Defocus"
+      },
+      "length": "Length",
+      "angle": "Angle",
+      "radius": "Radius",
+      "views": {
+        "noisy": "Noisy",
+        "blurred": "Blurred",
+        "restored": "Restored"
+      },
+      "restores": {
+        "none": "None",
+        "median": "Median",
+        "bilateral": "Bilateral",
+        "wienerDenoise": "Local Wiener",
+        "wiener": "Wiener",
+        "inverse": "Inverse",
+        "nlm": "NLM"
+      },
+      "strength": "Strength",
+      "nlmStrength": "NLM strength",
+      "runNlm": "Denoise on server",
+      "busy": "Running NLM…",
+      "nlmFailed": "NLM failed. Is the API running?"
     }
   },
   "transport": {
@@ -332,6 +372,7 @@
     "color": "Color spaces reorganize the same RGB data into components that separate brightness from chroma or model perception. Lab is approximately perceptually uniform, HSV separates hue and saturation, YCbCr enables chroma subsampling, and white balance scales channels so neutral areas become gray.",
     "morphology": "Morphology probes the image with a structuring element. Erosion keeps pixels whose whole neighborhood fits the element; dilation expands bright regions. Opening removes small bright details, closing fills small dark gaps, and top-hat or black-hat expose details smaller than the element.",
     "geometry": "Geometric transforms map output pixels back through the inverse homography H to sample the source. Interpolation chooses how fractional coordinates combine neighbors: nearest is fast and blocky, bilinear smooth, bicubic and Lanczos sharper. A Gaussian pyramid repeatedly blurs and downsamples; a Laplacian pyramid stores the residual lost at each level, so multiscale blending can mix coarse and fine structure separately.",
-    "halftone": "Halftoning trades spatial resolution for tonal resolution. Floyd–Steinberg diffuses each quantization error to future neighbors; ordered dithering compares the image to a Bayer threshold matrix. Palette reduction groups colors: median cut splits the color box with the widest range, while k-means iteratively moves centroids to the mean of their assigned pixels."
+    "halftone": "Halftoning trades spatial resolution for tonal resolution. Floyd–Steinberg diffuses each quantization error to future neighbors; ordered dithering compares the image to a Bayer threshold matrix. Palette reduction groups colors: median cut splits the color box with the widest range, while k-means iteratively moves centroids to the mean of their assigned pixels.",
+    "noise": "Noise adds a random term to every sample. Gaussian noise models sensor read noise, salt-and-pepper replaces isolated pixels, speckle is multiplicative, and Poisson noise follows photon counts. Restoration suppresses noise while keeping edges: median rejects outliers, bilateral weights neighbors by range, the local Wiener filter shrinks each pixel toward its neighborhood mean by the estimated noise variance, and deconvolution inverts a motion or defocus PSF. NLM compares whole patches and runs on the Python backend because it is too slow in the browser."
   }
 }

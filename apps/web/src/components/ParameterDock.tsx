@@ -12,6 +12,7 @@ import { HistogramView } from "./HistogramView";
 import { Inspector } from "./Inspector";
 import { MetricsPanel } from "./MetricsPanel";
 import { MorphologyPanel } from "./MorphologyPanel";
+import { NoisePanel } from "./NoisePanel";
 import { PointOpsPanel } from "./PointOpsPanel";
 import { SamplingPanel } from "./SamplingPanel";
 import { SpatialPanel } from "./SpatialPanel";
@@ -31,6 +32,7 @@ const TABS = [
   "morphology",
   "geometry",
   "halftone",
+  "noise",
 ] as const;
 type Tab = (typeof TABS)[number];
 
@@ -188,6 +190,7 @@ export function ParameterDock() {
       {tab === "morphology" && <MorphologyPanel />}
       {tab === "geometry" && <GeometryPanel />}
       {tab === "halftone" && <HalftonePanel />}
+      {tab === "noise" && <NoisePanel />}
     </aside>
   );
 }
